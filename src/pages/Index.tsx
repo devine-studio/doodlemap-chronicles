@@ -3,7 +3,8 @@ import { WorldMap } from '@/components/WorldMap';
 import { PinCard } from '@/components/PinCard';
 import { CreatePinDialog } from '@/components/CreatePinDialog';
 import { Button } from '@/components/ui/button';
-import { MapPin, Plus } from 'lucide-react';
+import { MapPin, Plus, Navigation } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Pin {
   id: string;
@@ -63,6 +64,46 @@ const Index = () => {
     setPins([...pins, newPin]);
   };
 
+  const handleUseMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocalização não é suportada pelo seu navegador');
+      return;
+    }
+
+    toast.loading('Obtendo sua localização...');
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setSelectedLocation({ lat: latitude, lng: longitude });
+        setDialogOpen(true);
+        toast.success('Localização obtida!');
+      },
+      (error) => {
+        let errorMessage = 'Não foi possível obter sua localização';
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Permissão de localização negada. Por favor, habilite nas configurações do navegador.';
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Informação de localização indisponível';
+            break;
+          case error.TIMEOUT:
+            errorMessage = 'Tempo esgotado ao tentar obter localização';
+            break;
+        }
+        
+        toast.error(errorMessage);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       {/* Header */}
@@ -81,15 +122,26 @@ const Index = () => {
               </p>
             </div>
           </div>
-          <Button 
-            variant="accent" 
-            size="lg"
-            onClick={() => setDialogOpen(true)}
-            className="gap-2"
-          >
-            <Plus className="w-5 h-5" strokeWidth={3} />
-            Criar Pin
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              variant="secondary" 
+              size="lg"
+              onClick={handleUseMyLocation}
+              className="gap-2"
+            >
+              <Navigation className="w-5 h-5" strokeWidth={3} />
+              Minha Localização
+            </Button>
+            <Button 
+              variant="accent" 
+              size="lg"
+              onClick={() => setDialogOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="w-5 h-5" strokeWidth={3} />
+              Criar Pin
+            </Button>
+          </div>
         </div>
       </header>
 
