@@ -215,7 +215,7 @@ const Index = () => {
                       Active Markers
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* <div className="grid grid-cols-2 gap-3">
                     <div className="tactical-border p-2 text-center bg-primary/5">
                       <div className="text-2xl font-bold text-primary">
                         {loading ? "--" : "72"}
@@ -232,7 +232,7 @@ const Index = () => {
                         Countries
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -332,8 +332,17 @@ const Index = () => {
                   />
                 </div>
               )}
-              <div className="mt-2 px-2 py-1 text-[10px] text-muted-foreground font-mono text-center flex-none">
+              <div className="flex flex-row items-center justify-between mt-2 px-2 py-1 text-[10px] text-muted-foreground font-mono text-center flex-none">
                 &gt; CLICK MAP TO DEPLOY NEW MARKER_
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleUseMyLocation}
+                  className="gap-2 h-6 tactical-border hover:bg-primary/10 glitch-hover"
+                >
+                  <Navigation className="w-5 h-5" />
+                  {/* <span className="hidden md:inline">LOCATE</span> */}
+                </Button>
               </div>
             </div>
           </main>
