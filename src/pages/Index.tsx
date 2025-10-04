@@ -70,16 +70,18 @@ const Index = () => {
       return;
     }
 
-    toast.loading('Obtendo sua localização...');
+    const loadingToast = toast.loading('Obtendo sua localização...');
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        toast.dismiss(loadingToast);
         const { latitude, longitude } = position.coords;
         setSelectedLocation({ lat: latitude, lng: longitude });
         setDialogOpen(true);
         toast.success('Localização obtida!');
       },
       (error) => {
+        toast.dismiss(loadingToast);
         let errorMessage = 'Não foi possível obter sua localização';
         
         switch (error.code) {
