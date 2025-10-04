@@ -1,15 +1,5 @@
-import { useMapEvents } from 'react-leaflet';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-// Fix for default marker icon
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+import { useState } from 'react';
+import { Map, Marker } from 'pigeon-maps';
 
 interface Pin {
   id: string;
@@ -27,55 +17,60 @@ interface WorldMapProps {
   onMapClick: (lat: number, lng: number) => void;
 }
 
-function MapClickHandler({ onClick }: { onClick: (lat: number, lng: number) => void }) {
-  useMapEvents({
-    click: (e) => {
-      onClick(e.latlng.lat, e.latlng.lng);
-    },
-  });
-  
-  return null;
-}
-
 export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
-  const center: [number, number] = [20, 0];
-  
+  const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
+
+  const handleClick = ({ latLng }: { latLng: [number, number] }) => {
+    onMapClick(latLng[0], latLng[1]);
+  };
+
   return (
-    <div className="w-full h-[600px] brutalist-border brutalist-shadow bg-background overflow-hidden">
-      <MapContainer
-        center={center}
-        zoom={2}
-        scrollWheelZoom={true}
-        className="h-full w-full"
-        style={{ background: '#ffffff' }}
+    <div className="w-full h-[600px] brutalist-border brutalist-shadow bg-background overflow-hidden relative">
+      <Map
+        height={600}
+        defaultCenter={[20, 0]}
+        defaultZoom={2}
+        onClick={handleClick}
       >
-        <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
-        <MapClickHandler onClick={onMapClick} />
-        {pins.map((pin) => {
-          const position: [number, number] = [pin.lat, pin.lng];
-          return (
-            <Marker key={pin.id} position={position}>
-              <Popup>
-                <div className="p-2 min-w-[200px]">
-                  <h3 className="font-bold text-lg mb-2">{pin.title}</h3>
-                  {pin.message && <p className="mb-2 text-sm">{pin.message}</p>}
-                  {pin.imageUrl && (
-                    <img 
-                      src={pin.imageUrl} 
-                      alt={pin.title}
-                      className="w-full h-32 object-cover mb-2 brutalist-border"
-                    />
-                  )}
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(pin.date).toLocaleDateString()}
-                    {pin.author && ` • ${pin.author}`}
-                  </p>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
+        {pins.map((pin) => (
+          <Marker
+            key={pin.id}
+            anchor={[pin.lat, pin.lng]}
+            color="#FFEE00"
+            onClick={() => setSelectedPin(pin)}
+          />
+        ))}
+      </Map>
+
+      {/* Popup Card */}
+      {selectedPin && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
+          <div className="bg-background brutalist-border brutalist-shadow p-4">
+            <button
+              onClick={() => setSelectedPin(null)}
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-muted rounded"
+              aria-label="Fechar"
+            >
+              <span className="text-2xl font-black leading-none">×</span>
+            </button>
+            <h3 className="font-black text-xl mb-2 pr-8">{selectedPin.title}</h3>
+            {selectedPin.imageUrl && (
+              <img
+                src={selectedPin.imageUrl}
+                alt={selectedPin.title}
+                className="w-full h-48 object-cover mb-3 brutalist-border"
+              />
+            )}
+            {selectedPin.message && (
+              <p className="text-sm mb-3">{selectedPin.message}</p>
+            )}
+            <p className="text-xs text-muted-foreground font-bold">
+              {new Date(selectedPin.date).toLocaleDateString('pt-BR')}
+              {selectedPin.author && ` • ${selectedPin.author}`}
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
