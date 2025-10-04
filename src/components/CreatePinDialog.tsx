@@ -104,7 +104,7 @@ export const CreatePinDialog = ({
           </div>
           <div>
             <label className="text-xs font-bold mb-2 block text-primary uppercase tracking-wider font-mono">
-              [ Image URL ]
+              [ URL ]
             </label>
             <Input
               value={imageUrl}

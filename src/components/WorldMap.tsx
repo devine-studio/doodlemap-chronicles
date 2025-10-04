@@ -84,11 +84,24 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
               {selectedPin.title}
             </h3>
             {selectedPin.image_url && (
-              <img
-                src={selectedPin.image_url}
-                alt={selectedPin.title}
-                className="w-full h-48 object-cover mb-3 tactical-border"
-              />
+              // <img
+              //   src={selectedPin.image_url}
+              //   alt={selectedPin.title}
+              //   className="w-full h-48 object-cover mb-3 tactical-border"
+              // />
+              <a
+                href={selectedPin.image_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className=""
+              >
+                <div className="text-sm mb-3 text-foreground truncate border border-primary/30 p-2">
+                  <span className="text-primary">URL:</span>
+                  <span className="text-primary underline">
+                    {selectedPin.image_url}
+                  </span>
+                </div>
+              </a>
             )}
             {selectedPin.message && (
               <p className="text-sm mb-3 text-foreground">
