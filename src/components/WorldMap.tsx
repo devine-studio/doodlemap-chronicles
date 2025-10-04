@@ -17,9 +17,10 @@ interface WorldMapProps {
   onMapClick: (lat: number, lng: number) => void;
 }
 
-// Dark tactical map provider
+// Dark tactical map provider with Stadia Maps API key
 const darkMapProvider = (x: number, y: number, z: number) => {
-  return `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/${z}/${x}/${y}.png`;
+  const apiKey = "2994038f-c0cf-4396-9944-8a50ef7eb90c";
+  return `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/${z}/${x}/${y}.png?api_key=${apiKey}`;
 };
 
 export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
