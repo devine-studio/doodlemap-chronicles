@@ -237,7 +237,7 @@ const Index = () => {
               </div>
 
               {/* Recent Activity */}
-              <div className="tactical-panel p-4 flex-none">
+              <div className="tactical-panel  p-4 flex-1">
                 <h2 className="text-xs font-bold text-primary mb-4 uppercase tracking-wider border-b border-primary/30 pb-2">
                   [ Recent Activity ]
                 </h2>
@@ -264,7 +264,7 @@ const Index = () => {
               </div>
 
               {/* Marker Database - Moved here */}
-              <div className="tactical-panel p-4 flex-1 flex flex-col overflow-hidden">
+              {/* <div className="tactical-panel p-4 flex-1 flex flex-col overflow-hidden">
                 <h2 className="text-xs font-bold text-primary mb-4 uppercase tracking-wider border-b border-primary/30 pb-2 flex items-center justify-between flex-none">
                   <span>[ Marker Database ]</span>
                   <span className="text-muted-foreground">
@@ -296,7 +296,7 @@ const Index = () => {
                     ))}
                   </div>
                 )}
-              </div>
+              </div> */}
             </div>
           </aside>
 
