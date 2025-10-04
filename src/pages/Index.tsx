@@ -14,8 +14,8 @@ interface Pin {
   title: string;
   message?: string;
   image_url?: string;
-  author?: string;
   created_at: string;
+  author?: string;
 }
 
 const Index = () => {
@@ -24,26 +24,26 @@ const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
   const [loading, setLoading] = useState(true);
 
-  // Load pins from database
+  // Fetch initial pins
   useEffect(() => {
-    loadPins();
+    fetchPins();
   }, []);
 
-  // Setup realtime subscription for live updates
+  // Set up realtime subscription
   useEffect(() => {
     const channel = supabase
       .channel('pins-changes')
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
           schema: 'public',
-          table: 'pins'
+          table: 'pins',
         },
         (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setPins(current => [payload.new as Pin, ...current]);
-          }
+          const newPin = payload.new as Pin;
+          setPins((current) => [newPin, ...current]);
+          toast.success('Novo pin adicionado ao mapa!');
         }
       )
       .subscribe();
@@ -53,7 +53,7 @@ const Index = () => {
     };
   }, []);
 
-  const loadPins = async () => {
+  const fetchPins = async () => {
     try {
       const { data, error } = await supabase
         .from('pins')
@@ -61,10 +61,9 @@ const Index = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
       setPins(data || []);
     } catch (error) {
-      console.error('Error loading pins:', error);
+      console.error('Error fetching pins:', error);
       toast.error('Erro ao carregar pins');
     } finally {
       setLoading(false);
@@ -85,20 +84,17 @@ const Index = () => {
     lng: number;
   }) => {
     try {
-      const { error } = await supabase
-        .from('pins')
-        .insert({
-          lat: pinData.lat,
-          lng: pinData.lng,
-          title: pinData.title,
-          message: pinData.message,
-          image_url: pinData.imageUrl,
-          author: pinData.author,
-        });
+      const { error } = await supabase.from('pins').insert({
+        title: pinData.title,
+        message: pinData.message,
+        image_url: pinData.imageUrl,
+        author: pinData.author,
+        lat: pinData.lat,
+        lng: pinData.lng,
+      });
 
       if (error) throw error;
-
-      // Pin will be added via realtime subscription
+      
       toast.success('Pin criado com sucesso!');
     } catch (error) {
       console.error('Error creating pin:', error);
@@ -191,7 +187,20 @@ const Index = () => {
 
       {/* Map Section */}
       <section className="mb-8">
-        <WorldMap pins={pins} onMapClick={handleMapClick} />
+        {loading ? (
+          <div className="w-full h-[600px] brutalist-border brutalist-shadow bg-muted flex items-center justify-center">
+            <p className="font-black text-xl">Carregando mapa...</p>
+          </div>
+        ) : (
+          <WorldMap 
+            pins={pins.map(pin => ({
+              ...pin,
+              imageUrl: pin.image_url,
+              date: pin.created_at
+            }))} 
+            onMapClick={handleMapClick} 
+          />
+        )}
         <p className="text-sm text-muted-foreground mt-3 font-bold text-center">
           Clique no mapa para adicionar um novo pin!
         </p>
@@ -201,17 +210,12 @@ const Index = () => {
       <section>
         <h2 className="text-3xl font-black mb-6 flex items-center gap-3">
           <div className="h-2 w-12 bg-secondary brutalist-border"></div>
-          Pins Recentes
+          Pins Recentes ({pins.length})
         </h2>
-        
-        {loading ? (
+        {pins.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground font-bold">Carregando pins...</p>
-          </div>
-        ) : pins.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground font-bold">
-              Nenhum pin ainda. Seja o primeiro a marcar o mapa! 🗺️
+            <p className="text-xl font-bold text-muted-foreground">
+              Nenhum pin ainda. Seja o primeiro a marcar o mapa!
             </p>
           </div>
         ) : (

@@ -56,8 +56,6 @@ export const CreatePinDialog = ({ open, onOpenChange, onSubmit, lat, lng }: Crea
     setImageUrl('');
     setAuthor('');
     onOpenChange(false);
-    
-    toast.success('Pin criado com sucesso!');
   };
 
   return (
