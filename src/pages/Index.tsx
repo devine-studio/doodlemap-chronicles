@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { WorldMap } from '@/components/WorldMap';
 import { PinCard } from '@/components/PinCard';
 import { CreatePinDialog } from '@/components/CreatePinDialog';
 import { Button } from '@/components/ui/button';
 import { MapPin, Plus, Navigation } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Pin {
   id: string;
@@ -12,56 +13,97 @@ interface Pin {
   lng: number;
   title: string;
   message?: string;
-  imageUrl?: string;
-  date: string;
+  image_url?: string;
   author?: string;
+  created_at: string;
 }
 
 const Index = () => {
-  const [pins, setPins] = useState<Pin[]>([
-    {
-      id: '1',
-      lat: 40.7128,
-      lng: -74.0060,
-      title: 'Nova York é incrível!',
-      message: 'Acabei de visitar a Estátua da Liberdade. Experiência única!',
-      date: new Date().toISOString(),
-      author: 'Maria',
-    },
-    {
-      id: '2',
-      lat: 48.8566,
-      lng: 2.3522,
-      title: 'Paris no outono',
-      message: 'As folhas amarelas e a Torre Eiffel criando uma vista perfeita.',
-      date: new Date().toISOString(),
-    },
-    {
-      id: '3',
-      lat: 35.6762,
-      lng: 139.6503,
-      title: 'Tóquio tech',
-      message: 'A cidade mais futurista que já visitei!',
-      date: new Date().toISOString(),
-      author: 'João',
-    },
-  ]);
-  
+  const [pins, setPins] = useState<Pin[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
+  const [loading, setLoading] = useState(true);
+
+  // Load pins from database
+  useEffect(() => {
+    loadPins();
+  }, []);
+
+  // Setup realtime subscription for live updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('pins-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'pins'
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setPins(current => [payload.new as Pin, ...current]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const loadPins = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('pins')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      setPins(data || []);
+    } catch (error) {
+      console.error('Error loading pins:', error);
+      toast.error('Erro ao carregar pins');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleMapClick = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
     setDialogOpen(true);
   };
 
-  const handleCreatePin = (pinData: Omit<Pin, 'id' | 'date'>) => {
-    const newPin: Pin = {
-      ...pinData,
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-    };
-    setPins([...pins, newPin]);
+  const handleCreatePin = async (pinData: {
+    title: string;
+    message?: string;
+    imageUrl?: string;
+    author?: string;
+    lat: number;
+    lng: number;
+  }) => {
+    try {
+      const { error } = await supabase
+        .from('pins')
+        .insert({
+          lat: pinData.lat,
+          lng: pinData.lng,
+          title: pinData.title,
+          message: pinData.message,
+          image_url: pinData.imageUrl,
+          author: pinData.author,
+        });
+
+      if (error) throw error;
+
+      // Pin will be added via realtime subscription
+      toast.success('Pin criado com sucesso!');
+    } catch (error) {
+      console.error('Error creating pin:', error);
+      toast.error('Erro ao criar pin');
+    }
   };
 
   const handleUseMyLocation = () => {
@@ -161,18 +203,31 @@ const Index = () => {
           <div className="h-2 w-12 bg-secondary brutalist-border"></div>
           Pins Recentes
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pins.slice().reverse().map((pin) => (
-            <PinCard
-              key={pin.id}
-              title={pin.title}
-              message={pin.message}
-              imageUrl={pin.imageUrl}
-              date={pin.date}
-              author={pin.author}
-            />
-          ))}
-        </div>
+        
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground font-bold">Carregando pins...</p>
+          </div>
+        ) : pins.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground font-bold">
+              Nenhum pin ainda. Seja o primeiro a marcar o mapa! 🗺️
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {pins.map((pin) => (
+              <PinCard
+                key={pin.id}
+                title={pin.title}
+                message={pin.message}
+                imageUrl={pin.image_url}
+                date={pin.created_at}
+                author={pin.author}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Create Pin Dialog */}

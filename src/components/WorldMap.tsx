@@ -7,9 +7,9 @@ interface Pin {
   lng: number;
   title: string;
   message?: string;
-  imageUrl?: string;
-  date: string;
+  image_url?: string;
   author?: string;
+  created_at: string;
 }
 
 interface WorldMapProps {
@@ -54,9 +54,9 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
               <span className="text-2xl font-black leading-none">×</span>
             </button>
             <h3 className="font-black text-xl mb-2 pr-8">{selectedPin.title}</h3>
-            {selectedPin.imageUrl && (
+            {selectedPin.image_url && (
               <img
-                src={selectedPin.imageUrl}
+                src={selectedPin.image_url}
                 alt={selectedPin.title}
                 className="w-full h-48 object-cover mb-3 brutalist-border"
               />
@@ -65,7 +65,7 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
               <p className="text-sm mb-3">{selectedPin.message}</p>
             )}
             <p className="text-xs text-muted-foreground font-bold">
-              {new Date(selectedPin.date).toLocaleDateString('pt-BR')}
+              {new Date(selectedPin.created_at).toLocaleDateString('pt-BR')}
               {selectedPin.author && ` • ${selectedPin.author}`}
             </p>
           </div>

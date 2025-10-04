@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pins: {
+        Row: {
+          author: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          lat: number
+          lng: number
+          message: string | null
+          title: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          lat: number
+          lng: number
+          message?: string | null
+          title: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          lat?: number
+          lng?: number
+          message?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
