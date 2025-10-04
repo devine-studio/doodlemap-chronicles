@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Map, Marker } from 'pigeon-maps';
+import { useState } from "react";
+import { Map, Marker } from "pigeon-maps";
 
 interface Pin {
   id: string;
@@ -17,6 +17,11 @@ interface WorldMapProps {
   onMapClick: (lat: number, lng: number) => void;
 }
 
+// Dark tactical map provider
+const darkMapProvider = (x: number, y: number, z: number) => {
+  return `https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/${z}/${x}/${y}.png`;
+};
+
 export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
 
@@ -25,49 +30,75 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
   };
 
   return (
-    <div className="w-full h-[600px] brutalist-border brutalist-shadow bg-background overflow-hidden relative">
+    <div className="w-full h-full tactical-border bg-black overflow-hidden relative">
+      {/* Dark themed map */}
       <Map
-        height={600}
         defaultCenter={[20, 0]}
         defaultZoom={2}
         onClick={handleClick}
+        dprs={[1, 2]}
+        attribution={false}
+        metaWheelZoom={true}
+        twoFingerDrag={false}
+        provider={darkMapProvider}
       >
         {pins.map((pin) => (
           <Marker
             key={pin.id}
             anchor={[pin.lat, pin.lng]}
-            color="#FFEE00"
+            color="#5EEAD4"
             onClick={() => setSelectedPin(pin)}
           />
         ))}
       </Map>
 
+      {/* Tactical overlay corners */}
+      <div className="absolute top-2 left-2 w-8 h-8 border-l-2 border-t-2 border-primary pointer-events-none"></div>
+      <div className="absolute top-2 right-2 w-8 h-8 border-r-2 border-t-2 border-primary pointer-events-none"></div>
+      <div className="absolute bottom-2 left-2 w-8 h-8 border-l-2 border-b-2 border-primary pointer-events-none"></div>
+      <div className="absolute bottom-2 right-2 w-8 h-8 border-r-2 border-b-2 border-primary pointer-events-none"></div>
+
+      {/* Crosshair center */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+        <div className="w-12 h-12 border border-primary/30 rounded-full"></div>
+        <div className="absolute top-1/2 left-0 w-full h-px bg-primary/30"></div>
+        <div className="absolute top-0 left-1/2 w-px h-full bg-primary/30"></div>
+      </div>
+
       {/* Popup Card */}
       {selectedPin && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
-          <div className="bg-background brutalist-border brutalist-shadow p-4">
+          <div className="tactical-panel p-4">
             <button
               onClick={() => setSelectedPin(null)}
-              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-muted rounded"
+              className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center hover:bg-primary/20 tactical-border rounded text-primary"
               aria-label="Fechar"
             >
-              <span className="text-2xl font-black leading-none">×</span>
+              <span className="text-xl font-bold leading-none">×</span>
             </button>
-            <h3 className="font-black text-xl mb-2 pr-8">{selectedPin.title}</h3>
+            <div className="text-[10px] text-muted-foreground font-mono mb-2 uppercase">
+              [ MARKER DATA ]
+            </div>
+            <h3 className="font-black text-lg mb-3 pr-8 text-primary uppercase">
+              {selectedPin.title}
+            </h3>
             {selectedPin.image_url && (
               <img
                 src={selectedPin.image_url}
                 alt={selectedPin.title}
-                className="w-full h-48 object-cover mb-3 brutalist-border"
+                className="w-full h-48 object-cover mb-3 tactical-border"
               />
             )}
             {selectedPin.message && (
-              <p className="text-sm mb-3">{selectedPin.message}</p>
+              <p className="text-sm mb-3 text-foreground">
+                {selectedPin.message}
+              </p>
             )}
-            <p className="text-xs text-muted-foreground font-bold">
-              {new Date(selectedPin.created_at).toLocaleDateString('pt-BR')}
-              {selectedPin.author && ` • ${selectedPin.author}`}
-            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono pt-2 border-t border-primary/30">
+              <span className="text-primary">●</span>
+              {new Date(selectedPin.created_at).toLocaleDateString("pt-BR")}
+              {selectedPin.author && ` | ${selectedPin.author}`}
+            </div>
           </div>
         </div>
       )}

@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -54,14 +59,18 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       borderWidth: {
-        'brutalist': 'var(--brutalist-border)',
+        brutalist: "var(--brutalist-border)",
+        tactical: "var(--tactical-border)",
       },
       boxShadow: {
-        'brutalist': 'var(--brutalist-shadow)',
-        'brutalist-hover': 'var(--brutalist-shadow-hover)',
+        brutalist: "var(--brutalist-shadow)",
+        "brutalist-hover": "var(--brutalist-shadow-hover)",
+        "tactical-glow": "var(--tactical-glow)",
       },
       fontFamily: {
-        sans: ['Space Grotesk', 'sans-serif'],
+        sans: ["Share Tech Mono", "monospace"],
+        mono: ["Share Tech Mono", "monospace"],
+        display: ["Orbitron", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -80,7 +89,7 @@ export default {
             height: "0",
           },
         },
-        "wiggle": {
+        wiggle: {
           "0%, 100%": { transform: "rotate(-1deg)" },
           "50%": { transform: "rotate(1deg)" },
         },
@@ -88,7 +97,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "wiggle": "wiggle 0.3s ease-in-out infinite",
+        wiggle: "wiggle 0.3s ease-in-out infinite",
       },
     },
   },
