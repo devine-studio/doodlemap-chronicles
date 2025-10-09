@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Map, Marker } from "pigeon-maps";
 import { Plus, Minus } from "lucide-react";
 
@@ -16,15 +16,48 @@ interface Pin {
 interface WorldMapProps {
   pins: Pin[];
   onMapClick: (lat: number, lng: number) => void;
+  onPinSelect?: (pin: Pin | null) => void;
+  selectedPinId?: string | null;
 }
 
-export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
+export const WorldMap = ({
+  pins,
+  onMapClick,
+  onPinSelect,
+  selectedPinId,
+}: WorldMapProps) => {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const [zoom, setZoom] = useState(2);
   const [center, setCenter] = useState<[number, number]>([20, 0]);
 
   const handleClick = ({ latLng }: { latLng: [number, number] }) => {
     onMapClick(latLng[0], latLng[1]);
+  };
+
+  // Handle external pin selection
+  useEffect(() => {
+    if (selectedPinId) {
+      const pin = pins.find((p) => p.id === selectedPinId);
+      if (pin) {
+        setSelectedPin(pin);
+        setCenter([pin.lat, pin.lng]);
+        setZoom(15);
+      }
+    }
+  }, [selectedPinId, pins]);
+
+  const handlePinClick = (pin: Pin) => {
+    setSelectedPin(pin);
+    if (onPinSelect) {
+      onPinSelect(pin);
+    }
+  };
+
+  const handleClosePin = () => {
+    setSelectedPin(null);
+    if (onPinSelect) {
+      onPinSelect(null);
+    }
   };
 
   return (
@@ -42,14 +75,18 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
         metaWheelZoom={true}
         twoFingerDrag={false}
       >
-        {pins.map((pin) => (
-          <Marker
-            key={pin.id}
-            anchor={[pin.lat, pin.lng]}
-            color="#0078D7"
-            onClick={() => setSelectedPin(pin)}
-          />
-        ))}
+        {pins.map((pin) => {
+          const isSelected = selectedPin?.id === pin.id;
+          return (
+            <Marker
+              key={pin.id}
+              anchor={[pin.lat, pin.lng]}
+              color={isSelected ? "#EF4444" : "#0078D7"}
+              width={40}
+              onClick={() => handlePinClick(pin)}
+            />
+          );
+        })}
       </Map>
 
       {/* Popup Card */}
@@ -57,7 +94,7 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
           <div className="aero-panel p-4 shadow-2xl">
             <button
-              onClick={() => setSelectedPin(null)}
+              onClick={handleClosePin}
               className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center glass-button rounded hover:bg-red-100 text-gray-700"
               aria-label="Close"
             >

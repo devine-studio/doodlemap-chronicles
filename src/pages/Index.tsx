@@ -23,6 +23,7 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
   const [loading, setLoading] = useState(true);
+  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
 
   // Fetch initial pins
   useEffect(() => {
@@ -102,6 +103,10 @@ const Index = () => {
     }
   };
 
+  const handlePinClick = (pinId: string) => {
+    setSelectedPinId(pinId);
+  };
+
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
@@ -156,15 +161,24 @@ const Index = () => {
           <div className="aero-glass p-4 shadow-lg">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-b from-blue-400 to-blue-600 p-2.5 rounded-lg shadow-md">
-                  <MapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
+                <div className="">
+                  {/* <MapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
+                   */}
+                  <img src="/win7world.png" alt="logo" className="w-16 h-16" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-semibold text-gray-800">
+                  <h1 className="text-2xl font-semibold font-sans italic text-blue-800">
                     mapin
                   </h1>
-                  <p className="text-xs text-gray-600">
-                    Pin your memories on the map
+                  <p className="text-xs text-blue-500">
+                    Qaulquer um pode compartilhar.{" "}
+                    {/* <a
+                      href="https://lemesvini.com"
+                      target="_blank"
+                      className="text-blue-600 underline"
+                    >
+                      lemesvini.
+                    </a> */}
                   </p>
                 </div>
               </div>
@@ -176,15 +190,64 @@ const Index = () => {
                   className="gap-2"
                 >
                   <Navigation className="w-4 h-4" />
-                  <span className="hidden sm:inline">Use My Location</span>
+                  <span className="hidden sm:inline">Minha Localização</span>
                 </Button>
               </div>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
-          {/* Left Sidebar */}
+        <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-4 overflow-hidden">
+          {/* Mobile Recent Pins - Top Half */}
+          <div className="lg:hidden flex flex-col h-[40%] overflow-hidden fade-in">
+            <div className="aero-panel p-3 flex-1 flex flex-col overflow-hidden shadow-md">
+              {/* Window title bar */}
+              <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500"></div>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-800 ml-2">
+                    Recent Pins
+                  </span>
+                </div>
+                <span className="text-xs text-gray-600">
+                  {pins.length} total
+                </span>
+              </div>
+
+              <div className="flex-1 overflow-hidden rounded-md border border-gray-300 bg-white">
+                <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full p-2">
+                  {pins.slice(0, 10).map((pin) => (
+                    <button
+                      key={pin.id}
+                      onClick={() => handlePinClick(pin.id)}
+                      className="w-full text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
+                    >
+                      <div className="text-gray-700 font-bold truncate">
+                        {pin.title}
+                      </div>
+                      <div className="text-gray-500 text-[10px] mt-1">
+                        {new Date(pin.created_at).toLocaleString()}
+                      </div>
+                      <div className="text-gray-400 font-medium truncate">
+                        by: {pin.author ? pin.author : "Anonymous"}
+                      </div>
+                    </button>
+                  ))}
+                  {pins.length === 0 && (
+                    <div className="text-xs text-gray-500 text-center py-8">
+                      No pins yet
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Left Sidebar */}
           <aside className="hidden lg:block lg:col-span-3 flex flex-col overflow-hidden fade-in">
             <div className="flex flex-col gap-4 h-full overflow-hidden">
               {/* Stats Panel */}
@@ -197,9 +260,7 @@ const Index = () => {
                     <div className="text-4xl font-bold text-blue-600">
                       {pins.length}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
-                      Total Pins
-                    </div>
+                    <div className="text-xs text-gray-600 mt-1">Total Pins</div>
                   </div>
                 </div>
               </div>
@@ -211,17 +272,21 @@ const Index = () => {
                 </h2>
                 <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full pr-2">
                   {pins.slice(0, 10).map((pin, index) => (
-                    <div
+                    <button
                       key={pin.id}
-                      className="text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 transition-colors"
+                      onClick={() => handlePinClick(pin.id)}
+                      className="w-full text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
                     >
-                      <div className="text-gray-800 font-medium truncate">
-                        {String(index + 1).padStart(2, "0")}. {pin.title}
+                      <div className="text-gray-700 font-bold truncate">
+                        {pin.title}
                       </div>
                       <div className="text-gray-500 text-[10px] mt-1">
                         {new Date(pin.created_at).toLocaleString()}
                       </div>
-                    </div>
+                      <div className="text-gray-400 font-medium truncate">
+                        by: {pin.author ? pin.author : "Anonymous"}
+                      </div>
+                    </button>
                   ))}
                   {pins.length === 0 && (
                     <div className="text-xs text-gray-500 text-center py-8">
@@ -233,8 +298,8 @@ const Index = () => {
             </div>
           </aside>
 
-          {/* Main Map Window */}
-          <main className="lg:col-span-9 flex flex-col overflow-hidden fade-in">
+          {/* Main Map Window - Mobile Bottom Half, Desktop Right Side */}
+          <main className="flex-1 lg:col-span-9 flex flex-col overflow-hidden fade-in">
             <div className="aero-panel p-3 flex-1 flex flex-col overflow-hidden shadow-lg">
               {/* Window title bar */}
               <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
@@ -249,7 +314,8 @@ const Index = () => {
                   </span>
                 </div>
                 <span className="text-xs text-gray-600">
-                  {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
+                  {selectedLocation.lat.toFixed(4)},{" "}
+                  {selectedLocation.lng.toFixed(4)}
                 </span>
               </div>
 
@@ -267,22 +333,34 @@ const Index = () => {
                       date: pin.created_at,
                     }))}
                     onMapClick={handleMapClick}
+                    selectedPinId={selectedPinId}
+                    onPinSelect={(pin) => setSelectedPinId(pin?.id || null)}
                   />
                 </div>
               )}
 
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
                 <span className="text-xs text-gray-600">
-                  Click on the map to add a new pin
+                  {/* <span className="sm:hidden">
+                    Memories. Pinned. By{" "}
+                    <a
+                      href="https://lemesvini.com"
+                      target="_blank"
+                      className="text-blue-600 underline"
+                    >
+                      lemesvini
+                    </a>
+                  </span> */}
+                  <span className="">Click on the map to add a new pin</span>
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleUseMyLocation}
-                  className="gap-1 lg:hidden"
+                  className="gap-1"
                 >
                   <Navigation className="w-4 h-4" />
-                  <span>My Location</span>
+                  <span>Minha Localização</span>
                 </Button>
               </div>
             </div>
