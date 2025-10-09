@@ -5,23 +5,23 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-bold transition-all focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 brutalist-border brutalist-shadow hover:brutalist-shadow-hover hover:-translate-y-1",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 glass-button rounded-md",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline: "bg-background text-foreground hover:bg-muted",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/90",
-        accent: "bg-accent text-accent-foreground hover:bg-accent/90",
-        ghost: "border-none shadow-none hover:bg-muted hover:shadow-none hover:translate-y-0",
-        link: "text-foreground underline-offset-4 hover:underline border-none shadow-none hover:shadow-none hover:translate-y-0",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-md",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-md",
+        outline: "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        accent: "bg-accent text-accent-foreground hover:bg-accent/90 shadow-md",
+        ghost: "border-none shadow-none hover:bg-accent/50 bg-transparent",
+        link: "text-primary underline-offset-4 hover:underline border-none shadow-none bg-transparent",
       },
       size: {
-        default: "h-12 px-6 py-3",
-        sm: "h-10 px-4",
-        lg: "h-14 px-8 text-base",
-        icon: "h-12 w-12",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 px-3 text-xs",
+        lg: "h-11 px-8 text-base",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {

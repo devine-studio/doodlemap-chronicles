@@ -14,52 +14,40 @@ export const PinCard = ({
   author,
 }: PinCardProps) => {
   return (
-    <div className="tactical-panel p-3 hover:shadow-[0_0_20px_rgba(94,234,212,0.3)] transition-all glitch-hover group">
-      {/* Header bar */}
-      <div className="flex items-center justify-between mb-2 pb-2 border-b border-primary/30">
-        <div className="flex items-center gap-2">
-          <span className="text-primary text-xs">●</span>
-          <span className="text-[10px] text-muted-foreground font-mono uppercase">
-            MARKER DATA
-          </span>
-        </div>
-        <div className="w-2 h-2 bg-primary rounded-full pulse-glow"></div>
+    <div className="aero-panel p-3 hover:shadow-lg transition-all">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-200">
+        <span className="text-xs text-gray-600 font-medium">Pin Info</span>
+        <div className="w-2 h-2 bg-green-500 rounded-full shadow-sm"></div>
       </div>
 
       {/* Title */}
-      <h3 className="font-black text-base mb-3 text-primary uppercase tracking-wide line-clamp-2">
+      <h3 className="font-semibold text-sm mb-2 text-gray-800 line-clamp-2">
         {title}
       </h3>
 
       {/* Image */}
       {imageUrl && (
-        <div className="relative mb-3">
+        <div className="mb-2 rounded overflow-hidden border border-gray-200">
           <img
             src={imageUrl}
             alt={title}
-            className="w-full h-40 object-cover tactical-border"
+            className="w-full h-32 object-cover"
           />
-          {/* Tactical corners on image */}
-          <div className="absolute top-1 left-1 w-4 h-4 border-l border-t border-primary/60"></div>
-          <div className="absolute top-1 right-1 w-4 h-4 border-r border-t border-primary/60"></div>
-          <div className="absolute bottom-1 left-1 w-4 h-4 border-l border-b border-primary/60"></div>
-          <div className="absolute bottom-1 right-1 w-4 h-4 border-r border-b border-primary/60"></div>
         </div>
       )}
 
       {/* Message */}
       {message && (
-        <p className="text-xs mb-3 line-clamp-3 text-foreground/80 font-mono leading-relaxed">
+        <p className="text-xs mb-2 line-clamp-3 text-gray-700 leading-relaxed">
           {message}
         </p>
       )}
 
       {/* Footer */}
-      <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-2 border-t border-primary/20">
-        <span>{new Date(date).toLocaleDateString("pt-BR")}</span>
-        {author && (
-          <span className="text-primary">USER: {author.toUpperCase()}</span>
-        )}
+      <div className="flex items-center justify-between text-[10px] text-gray-500 pt-2 border-t border-gray-100">
+        <span>{new Date(date).toLocaleDateString()}</span>
+        {author && <span className="text-blue-600">by {author}</span>}
       </div>
     </div>
   );

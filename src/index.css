@@ -1,54 +1,56 @@
-@import url("https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Cyberpunk Tactical Interface Design System */
+/* Windows 7 Aero Glass Design System */
 
 @layer base {
   :root {
-    /* Dark cyberpunk palette */
-    --background: 220 13% 7%;
-    --foreground: 166 82% 63%;
+    /* Windows 7 Aero palette */
+    --background: 210 20% 96%;
+    --foreground: 210 12% 16%;
 
-    --card: 220 13% 10%;
-    --card-foreground: 166 82% 63%;
+    --card: 210 20% 98%;
+    --card-foreground: 210 12% 16%;
 
-    --popover: 220 13% 10%;
-    --popover-foreground: 166 82% 63%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 12% 16%;
 
-    /* Primary - cyan/green terminal */
-    --primary: 166 82% 63%;
-    --primary-foreground: 220 13% 7%;
+    /* Primary - Windows 7 blue */
+    --primary: 205 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary - dark panel */
-    --secondary: 220 13% 13%;
-    --secondary-foreground: 166 82% 63%;
+    /* Secondary - light gray */
+    --secondary: 210 20% 92%;
+    --secondary-foreground: 210 12% 16%;
 
-    /* Accent - bright cyan */
-    --accent: 174 100% 47%;
-    --accent-foreground: 220 13% 7%;
+    /* Accent - bright blue */
+    --accent: 205 100% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Muted - darker gray */
-    --muted: 220 13% 15%;
-    --muted-foreground: 166 40% 50%;
+    /* Muted - medium gray */
+    --muted: 210 20% 88%;
+    --muted-foreground: 210 12% 45%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders - cyan glow */
-    --border: 166 82% 63%;
-    --input: 166 82% 63%;
-    --ring: 166 82% 63%;
+    /* Borders - light gray/blue */
+    --border: 210 20% 80%;
+    --input: 210 20% 70%;
+    --ring: 205 100% 50%;
 
-    --radius: 0rem;
+    --radius: 0.375rem;
 
-    /* Custom tactical design tokens */
-    --tactical-border: 1px;
-    --tactical-glow: 0 0 10px rgba(94, 234, 212, 0.5);
-    --tactical-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
-    --grid-color: rgba(94, 234, 212, 0.1);
+    /* Windows 7 Aero design tokens */
+    --aero-glass: linear-gradient(180deg, rgba(227, 244, 252, 0.95) 0%, rgba(193, 230, 253, 0.95) 50%, rgba(164, 217, 252, 0.95) 100%);
+    --aero-border: 1px;
+    --aero-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --aero-glow: 0 0 15px rgba(76, 194, 255, 0.4);
+    --button-gradient: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(230, 245, 255, 0.9) 50%, rgba(205, 235, 255, 0.9) 100%);
+    --button-hover-gradient: linear-gradient(180deg, rgba(240, 250, 255, 0.95) 0%, rgba(215, 240, 255, 0.95) 50%, rgba(190, 230, 255, 0.95) 100%);
   }
 }
 
@@ -59,7 +61,7 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Share Tech Mono", monospace;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     overflow-x: hidden;
   }
 
@@ -69,141 +71,130 @@
   h4,
   h5,
   h6 {
-    font-family: "Orbitron", sans-serif;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
   }
 
-  /* Tactical utility classes */
-  .tactical-border {
-    border: var(--tactical-border) solid hsl(var(--border));
-    box-shadow: var(--tactical-glow);
+  /* Windows 7 Aero utility classes */
+  .aero-glass {
+    background: var(--aero-glass);
+    border: var(--aero-border) solid hsl(var(--border));
+    box-shadow: var(--aero-shadow);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius);
   }
 
-  .tactical-panel {
-    background: rgba(16, 20, 28, 0.9);
-    border: var(--tactical-border) solid hsl(var(--border));
-    box-shadow: var(--tactical-glow), var(--tactical-shadow);
+  .aero-panel {
+    background: rgba(255, 255, 255, 0.85);
+    border: var(--aero-border) solid hsl(var(--border));
+    box-shadow: var(--aero-shadow);
     backdrop-filter: blur(10px);
+    border-radius: var(--radius);
   }
 
-  .tactical-grid {
-    background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-    background-size: 20px 20px;
+  .window-chrome {
+    background: var(--aero-glass);
+    border: var(--aero-border) solid hsl(var(--border));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius) var(--radius) 0 0;
   }
 
-  .tactical-grid-large {
-    background-image: linear-gradient(var(--grid-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
-    background-size: 50px 50px;
+  .glass-button {
+    background: var(--button-gradient);
+    border: 1px solid hsl(var(--border));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
   }
 
-  .text-glow {
-    text-shadow: 0 0 10px rgba(94, 234, 212, 0.8);
+  .glass-button:hover {
+    background: var(--button-hover-gradient);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
   }
 
-  /* Scanline effect */
-  /* @keyframes scanline {
-    0% {
-      transform: translateY(-100%);
-    }
-    100% {
-      transform: translateY(100vh);
-    }
+  .glass-button:active {
+    background: linear-gradient(180deg, rgba(190, 230, 255, 0.95) 0%, rgba(215, 240, 255, 0.95) 50%, rgba(240, 250, 255, 0.95) 100%);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 
-  .scanline-effect::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: linear-gradient(
-      transparent,
-      rgba(94, 234, 212, 0.5),
-      transparent
-    );
-    animation: scanline 8s linear infinite;
-    pointer-events: none;
-    z-index: 9999;
-  } */
-
-  /* Glitch effect */
-  @keyframes glitch {
-    0%,
-    100% {
-      transform: translate(0);
-    }
-    20% {
-      transform: translate(-2px, 2px);
-    }
-    40% {
-      transform: translate(-2px, -2px);
-    }
-    60% {
-      transform: translate(2px, 2px);
-    }
-    80% {
-      transform: translate(2px, -2px);
-    }
+  /* Aero glow effect */
+  .aero-glow {
+    box-shadow: var(--aero-glow);
   }
 
-  .glitch-hover:hover {
-    animation: glitch 0.3s ease-in-out;
-  }
-
-  /* Pulse animation */
-  @keyframes pulse-glow {
-    0%,
-    100% {
-      box-shadow: 0 0 10px rgba(94, 234, 212, 0.5);
+  /* Smooth animations */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
     }
-    50% {
-      box-shadow: 0 0 20px rgba(94, 234, 212, 0.8);
-    }
-  }
-
-  .pulse-glow {
-    animation: pulse-glow 2s ease-in-out infinite;
-  }
-
-  /* Flicker effect */
-  @keyframes flicker {
-    0%,
-    100% {
+    to {
       opacity: 1;
-    }
-    50% {
-      opacity: 0.8;
+      transform: translateY(0);
     }
   }
 
-  .flicker {
-    animation: flicker 3s ease-in-out infinite;
+  .fade-in {
+    animation: fade-in 0.3s ease-out;
   }
 
-  /* Custom scrollbar styling */
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
+  /* Shine effect for buttons */
+  @keyframes shine {
+    0% {
+      background-position: -100% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: rgba(94, 234, 212, 0.05);
-    border-radius: 0;
+  .shine-effect {
+    position: relative;
+    overflow: hidden;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(94, 234, 212, 0.3);
-    border-radius: 0;
+  .shine-effect::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shine 3s infinite;
   }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: rgba(94, 234, 212, 0.5);
+  /* Custom scrollbar styling - Windows 7 style */
+  .scrollbar-win7::-webkit-scrollbar {
+    width: 16px;
+    height: 16px;
+  }
+
+  .scrollbar-win7::-webkit-scrollbar-track {
+    background: linear-gradient(180deg, #f0f0f0 0%, #e0e0e0 100%);
+    border: 1px solid #d0d0d0;
+  }
+
+  .scrollbar-win7::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #e5e5e5 0%, #c0c0c0 50%, #b0b0b0 100%);
+    border: 1px solid #a0a0a0;
+    border-radius: 2px;
+  }
+
+  .scrollbar-win7::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #d0d0d0 0%, #b0b0b0 50%, #a0a0a0 100%);
+  }
+
+  .scrollbar-win7::-webkit-scrollbar-button {
+    background: linear-gradient(180deg, #e5e5e5 0%, #c0c0c0 100%);
+    border: 1px solid #a0a0a0;
+    height: 16px;
+    width: 16px;
   }
 
   /* Firefox scrollbar */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(94, 234, 212, 0.3) rgba(94, 234, 212, 0.05);
+  .scrollbar-win7 {
+    scrollbar-width: auto;
+    scrollbar-color: #c0c0c0 #e0e0e0;
   }
 }

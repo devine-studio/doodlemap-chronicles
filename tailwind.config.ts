@@ -59,18 +59,14 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       borderWidth: {
-        brutalist: "var(--brutalist-border)",
-        tactical: "var(--tactical-border)",
+        aero: "var(--aero-border)",
       },
       boxShadow: {
-        brutalist: "var(--brutalist-shadow)",
-        "brutalist-hover": "var(--brutalist-shadow-hover)",
-        "tactical-glow": "var(--tactical-glow)",
+        aero: "var(--aero-shadow)",
+        "aero-glow": "var(--aero-glow)",
       },
       fontFamily: {
-        sans: ["Share Tech Mono", "monospace"],
-        mono: ["Share Tech Mono", "monospace"],
-        display: ["Orbitron", "sans-serif"],
+        sans: ["Segoe UI", "Tahoma", "Geneva", "Verdana", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {

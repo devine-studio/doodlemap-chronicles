@@ -43,7 +43,7 @@ const Index = () => {
         (payload) => {
           const newPin = payload.new as Pin;
           setPins((current) => [newPin, ...current]);
-          toast.success("Novo pin adicionado ao mapa!");
+          toast.success("New pin added to map!");
         }
       )
       .subscribe();
@@ -64,7 +64,7 @@ const Index = () => {
       setPins(data || []);
     } catch (error) {
       console.error("Error fetching pins:", error);
-      toast.error("Erro ao carregar pins");
+      toast.error("Error loading pins");
     } finally {
       setLoading(false);
     }
@@ -95,20 +95,20 @@ const Index = () => {
 
       if (error) throw error;
 
-      toast.success("Pin criado com sucesso!");
+      toast.success("Pin created successfully!");
     } catch (error) {
       console.error("Error creating pin:", error);
-      toast.error("Erro ao criar pin");
+      toast.error("Error creating pin");
     }
   };
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("Geolocalização não é suportada pelo seu navegador");
+      toast.error("Geolocation is not supported by your browser");
       return;
     }
 
-    const loadingToast = toast.loading("Obtendo sua localização...");
+    const loadingToast = toast.loading("Getting your location...");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -116,22 +116,22 @@ const Index = () => {
         const { latitude, longitude } = position.coords;
         setSelectedLocation({ lat: latitude, lng: longitude });
         setDialogOpen(true);
-        toast.success("Localização obtida!");
+        toast.success("Location obtained!");
       },
       (error) => {
         toast.dismiss(loadingToast);
-        let errorMessage = "Não foi possível obter sua localização";
+        let errorMessage = "Could not get your location";
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage =
-              "Permissão de localização negada. Por favor, habilite nas configurações do navegador.";
+              "Location permission denied. Please enable it in browser settings.";
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = "Informação de localização indisponível";
+            errorMessage = "Location information unavailable";
             break;
           case error.TIMEOUT:
-            errorMessage = "Tempo esgotado ao tentar obter localização";
+            errorMessage = "Location request timed out";
             break;
         }
 
@@ -146,182 +146,120 @@ const Index = () => {
   };
 
   return (
-    <div className="h-[100dvh] bg-background tactical-grid-large scanline-effect overflow-hidden flex flex-col">
-      {/* Tactical Grid Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent flicker"></div>
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent flicker"></div>
-        <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-transparent via-primary to-transparent flicker"></div>
-        <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-transparent via-primary to-transparent flicker"></div>
-      </div>
+    <div className="h-[100dvh] bg-gradient-to-b from-blue-100 to-blue-50 overflow-hidden flex flex-col">
+      {/* Windows 7 desktop background gradient */}
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-400/20 via-blue-300/10 to-blue-200/20 pointer-events-none"></div>
 
-      <div className="relative z-10 flex flex-col h-full max-w-[2000px] mx-auto w-full">
-        {/* Header */}
-        <header className="hidden md:block p-4 md:p-6 pb-2 md:pb-3">
-          <div className="tactical-panel p-4 md:p-6">
+      <div className="relative z-10 flex flex-col h-full max-w-[1600px] mx-auto w-full p-4 gap-4">
+        {/* Header Window */}
+        <header className="fade-in">
+          <div className="aero-glass p-4 shadow-lg">
             <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-4">
-                <div className="bg-primary/20 p-3 tactical-border pulse-glow">
-                  <MapPin className="w-8 h-8 text-primary" strokeWidth={2} />
+              <div className="flex items-center gap-3">
+                <div className="bg-gradient-to-b from-blue-400 to-blue-600 p-2.5 rounded-lg shadow-md">
+                  <MapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <h1 className="text-3xl md:text-4xl font-black tracking-wider text-glow uppercase">
-                    DOODLEMAP CHRONICLES
+                  <h1 className="text-2xl font-semibold text-gray-800">
+                    DoodleMap
                   </h1>
-                  <p className="text-xs md:text-sm text-muted-foreground font-mono mt-1">
-                    [TACTICAL MAPPING INTERFACE v2.0]
+                  <p className="text-xs text-gray-600">
+                    Pin your memories on the map
                   </p>
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <Button
-                  variant="ghost"
-                  size="lg"
+                  variant="secondary"
+                  size="default"
                   onClick={handleUseMyLocation}
-                  className="gap-2 tactical-border hover:bg-primary/10 glitch-hover"
+                  className="gap-2"
                 >
-                  <Navigation className="w-5 h-5" />
-                  <span className="hidden md:inline">LOCATE</span>
+                  <Navigation className="w-4 h-4" />
+                  <span className="hidden sm:inline">Use My Location</span>
                 </Button>
-                {/* <Button
-                  variant="default"
-                  size="lg"
-                  onClick={() => setDialogOpen(true)}
-                  className="gap-2 bg-primary/20 hover:bg-primary/30 tactical-border text-primary glitch-hover"
-                >
-                  <Plus className="w-5 h-5" />
-                  <span className="hidden md:inline">NEW PIN</span>
-                </Button> */}
               </div>
             </div>
           </div>
         </header>
 
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 p-4 md:p-6 overflow-hidden">
-          {/* Left Stats Panel */}
-          <aside className="hidden md:block lg:col-span-3 flex flex-col overflow-hidden">
+        <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 overflow-hidden">
+          {/* Left Sidebar */}
+          <aside className="hidden lg:block lg:col-span-3 flex flex-col overflow-hidden fade-in">
             <div className="flex flex-col gap-4 h-full overflow-hidden">
-              {/* Status Panel */}
-              <div className="tactical-panel p-4 flex-none">
-                <h2 className="text-xs font-bold text-primary mb-4 uppercase tracking-wider border-b border-primary/30 pb-2">
-                  [ System Status ]
+              {/* Stats Panel */}
+              <div className="aero-panel p-4 shadow-md">
+                <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-300">
+                  Statistics
                 </h2>
-                <div className="space-y-4">
-                  <div className="text-center">
-                    <div className="text-5xl font-black text-glow text-primary">
+                <div className="space-y-3">
+                  <div className="text-center bg-gradient-to-b from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
+                    <div className="text-4xl font-bold text-blue-600">
                       {pins.length}
                     </div>
-                    <div className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
-                      Active Markers
+                    <div className="text-xs text-gray-600 mt-1">
+                      Total Pins
                     </div>
                   </div>
-                  {/* <div className="grid grid-cols-2 gap-3">
-                    <div className="tactical-border p-2 text-center bg-primary/5">
-                      <div className="text-2xl font-bold text-primary">
-                        {loading ? "--" : "72"}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground uppercase">
-                        Regions
-                      </div>
-                    </div>
-                    <div className="tactical-border p-2 text-center bg-primary/5">
-                      <div className="text-2xl font-bold text-primary">
-                        {loading ? "--" : "45"}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground uppercase">
-                        Countries
-                      </div>
-                    </div>
-                  </div> */}
                 </div>
               </div>
 
               {/* Recent Activity */}
-              <div className="tactical-panel  p-4 flex-1">
-                <h2 className="text-xs font-bold text-primary mb-4 uppercase tracking-wider border-b border-primary/30 pb-2">
-                  [ Recent Activity ]
+              <div className="aero-panel p-4 flex-1 overflow-hidden shadow-md">
+                <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-300">
+                  Recent Pins
                 </h2>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto scrollbar-thin">
+                <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full pr-2">
                   {pins.slice(0, 10).map((pin, index) => (
                     <div
                       key={pin.id}
-                      className="text-xs p-2 tactical-border bg-primary/5 hover:bg-primary/10 transition-colors"
+                      className="text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 transition-colors"
                     >
-                      <div className="text-primary font-mono truncate">
-                        {String(index + 1).padStart(2, "0")}_ {pin.title}
+                      <div className="text-gray-800 font-medium truncate">
+                        {String(index + 1).padStart(2, "0")}. {pin.title}
                       </div>
-                      <div className="text-muted-foreground text-[10px] mt-1">
-                        {new Date(pin.created_at).toLocaleTimeString("pt-BR")}
+                      <div className="text-gray-500 text-[10px] mt-1">
+                        {new Date(pin.created_at).toLocaleString()}
                       </div>
                     </div>
                   ))}
                   {pins.length === 0 && (
-                    <div className="text-xs text-muted-foreground text-center py-4">
-                      No activity detected
+                    <div className="text-xs text-gray-500 text-center py-8">
+                      No pins yet
                     </div>
                   )}
                 </div>
               </div>
-
-              {/* Marker Database - Moved here */}
-              {/* <div className="tactical-panel p-4 flex-1 flex flex-col overflow-hidden">
-                <h2 className="text-xs font-bold text-primary mb-4 uppercase tracking-wider border-b border-primary/30 pb-2 flex items-center justify-between flex-none">
-                  <span>[ Marker Database ]</span>
-                  <span className="text-muted-foreground">
-                    ENTRIES: {pins.length}
-                  </span>
-                </h2>
-                {pins.length === 0 ? (
-                  <div className="text-center py-8 tactical-border bg-primary/5 flex-1 flex flex-col items-center justify-center">
-                    <div className="text-4xl mb-3 opacity-30">◈</div>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      NO MARKERS DEPLOYED
-                      <br />
-                      <span className="text-[10px]">
-                        INITIALIZE FIRST MARKER TO BEGIN_
-                      </span>
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3 overflow-y-auto flex-1 pr-2 scrollbar-thin">
-                    {pins.map((pin) => (
-                      <PinCard
-                        key={pin.id}
-                        title={pin.title}
-                        message={pin.message}
-                        imageUrl={pin.image_url}
-                        date={pin.created_at}
-                        author={pin.author}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div> */}
             </div>
           </aside>
 
-          {/* Center Map */}
-          <main className="lg:col-span-9 flex flex-col overflow-hidden">
-            {/* Map Container */}
-            <div className="tactical-panel p-2 flex-1 flex flex-col overflow-hidden">
-              <div className="border-b border-primary/30 px-2 py-1 mb-2 flex items-center justify-between flex-none">
-                <span className="text-xs text-primary font-mono uppercase">
-                  [ Global Tactical Map ]
-                </span>
-                <span className="text-[10px] text-muted-foreground font-mono">
-                  LAT: {selectedLocation.lat.toFixed(4)} | LNG:{" "}
-                  {selectedLocation.lng.toFixed(4)}
+          {/* Main Map Window */}
+          <main className="lg:col-span-9 flex flex-col overflow-hidden fade-in">
+            <div className="aero-panel p-3 flex-1 flex flex-col overflow-hidden shadow-lg">
+              {/* Window title bar */}
+              <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500"></div>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-800 ml-2">
+                    World Map
+                  </span>
+                </div>
+                <span className="text-xs text-gray-600">
+                  {selectedLocation.lat.toFixed(4)}, {selectedLocation.lng.toFixed(4)}
                 </span>
               </div>
+
               {loading ? (
-                <div className="w-full flex-1 bg-background tactical-border flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="font-mono text-sm text-primary">
-                    INITIALIZING MAP...
-                  </p>
+                <div className="w-full flex-1 bg-white rounded-md border border-gray-300 flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                  <p className="text-sm text-gray-600">Loading map...</p>
                 </div>
               ) : (
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden rounded-md border border-gray-300">
                   <WorldMap
                     pins={pins.map((pin) => ({
                       ...pin,
@@ -332,16 +270,19 @@ const Index = () => {
                   />
                 </div>
               )}
-              <div className="flex flex-row items-center justify-between mt-2 px-2 py-1 text-[10px] text-muted-foreground font-mono text-center flex-none">
-                &gt; CLICK MAP TO DEPLOY NEW MARKER_
+
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
+                <span className="text-xs text-gray-600">
+                  Click on the map to add a new pin
+                </span>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="sm"
                   onClick={handleUseMyLocation}
-                  className="gap-2 h-6 tactical-border hover:bg-primary/10 glitch-hover"
+                  className="gap-1 lg:hidden"
                 >
-                  <Navigation className="w-5 h-5" />
-                  {/* <span className="hidden md:inline">LOCATE</span> */}
+                  <Navigation className="w-4 h-4" />
+                  <span>My Location</span>
                 </Button>
               </div>
             </div>

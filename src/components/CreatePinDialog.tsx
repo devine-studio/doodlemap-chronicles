@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface CreatePinDialogProps {
@@ -43,7 +44,7 @@ export const CreatePinDialog = ({
     e.preventDefault();
 
     if (!title.trim()) {
-      toast.error("O título é obrigatório!");
+      toast.error("Title is required!");
       return;
     }
 
@@ -66,84 +67,87 @@ export const CreatePinDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] tactical-panel border-2 border-primary">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <div className="text-[10px] text-muted-foreground font-mono mb-2 uppercase flex items-center gap-2">
-            <span className="text-primary">●</span>[ NEW MARKER DEPLOYMENT ]
-          </div>
-          <DialogTitle className="text-2xl font-black text-primary uppercase tracking-wider">
-            CREATE PIN
+          <DialogTitle className="text-xl font-semibold">
+            Create New Pin
           </DialogTitle>
-          <DialogDescription className="text-sm font-mono text-muted-foreground">
-            &gt; Initialize marker data on global map_
+          <DialogDescription className="text-sm">
+            Add a new pin to the map with your information
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-bold mb-2 block text-primary uppercase tracking-wider font-mono">
-              [ Title ] *
-            </label>
+            <Label htmlFor="title" className="text-sm font-medium">
+              Title *
+            </Label>
             <Input
+              id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter marker title..."
+              placeholder="Enter pin title..."
               required
-              className="tactical-border bg-background/50 text-foreground placeholder:text-muted-foreground font-mono"
+              className="mt-1.5"
             />
           </div>
           <div>
-            <label className="text-xs font-bold mb-2 block text-primary uppercase tracking-wider font-mono">
-              [ Message ]
-            </label>
+            <Label htmlFor="message" className="text-sm font-medium">
+              Message
+            </Label>
             <Textarea
+              id="message"
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Enter marker description..."
-              className="tactical-border bg-background/50 text-foreground placeholder:text-muted-foreground font-mono min-h-[100px]"
+              placeholder="Enter a description..."
+              className="mt-1.5"
             />
           </div>
           <div>
-            <label className="text-xs font-bold mb-2 block text-primary uppercase tracking-wider font-mono">
-              [ URL ]
-            </label>
+            <Label htmlFor="imageUrl" className="text-sm font-medium">
+              Image URL
+            </Label>
             <Input
+              id="imageUrl"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://..."
               type="url"
-              className="tactical-border bg-background/50 text-foreground placeholder:text-muted-foreground font-mono"
+              className="mt-1.5"
             />
           </div>
           <div>
-            <label className="text-xs font-bold mb-2 block text-primary uppercase tracking-wider font-mono">
-              [ User ID ] (Optional)
-            </label>
+            <Label htmlFor="author" className="text-sm font-medium">
+              Author (Optional)
+            </Label>
             <Input
+              id="author"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
               placeholder="Anonymous"
-              className="tactical-border bg-background/50 text-foreground placeholder:text-muted-foreground font-mono"
+              className="mt-1.5"
             />
           </div>
 
           {/* Coordinates display */}
-          <div className="tactical-border p-3 bg-primary/5">
-            <div className="text-[10px] text-muted-foreground font-mono uppercase mb-1">
-              [ Deployment Coordinates ]
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
+            <div className="text-xs text-gray-600 mb-1">
+              Pin Coordinates
             </div>
-            <div className="text-xs font-mono text-primary">
-              LAT: {lat.toFixed(6)} | LNG: {lng.toFixed(6)}
+            <div className="text-sm font-medium text-gray-800">
+              Latitude: {lat.toFixed(6)}, Longitude: {lng.toFixed(6)}
             </div>
           </div>
 
           <DialogFooter>
             <Button
-              type="submit"
-              variant="default"
-              size="lg"
-              className="w-full bg-primary/20 hover:bg-primary/30 tactical-border text-primary font-bold uppercase tracking-wider glitch-hover"
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
             >
-              &gt; DEPLOY MARKER_
+              Cancel
+            </Button>
+            <Button type="submit" className="shine-effect">
+              Create Pin
             </Button>
           </DialogFooter>
         </form>
