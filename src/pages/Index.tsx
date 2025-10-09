@@ -171,7 +171,7 @@ const Index = () => {
                     mapin
                   </h1>
                   <p className="text-xs text-blue-500">
-                    Qaulquer um pode compartilhar.{" "}
+                    Qualquer um pode compartilhar.{" "}
                     {/* <a
                       href="https://lemesvini.com"
                       target="_blank"
@@ -182,12 +182,12 @@ const Index = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 hidden sm:inline">
                 <Button
                   variant="secondary"
                   size="default"
                   onClick={handleUseMyLocation}
-                  className="gap-2"
+                  className="gap-2 "
                 >
                   <Navigation className="w-4 h-4" />
                   <span className="hidden sm:inline">Minha Localização</span>
