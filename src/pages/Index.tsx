@@ -161,7 +161,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h1 className="text-2xl font-semibold text-gray-800">
-                    DoodleMap
+                    mapin
                   </h1>
                   <p className="text-xs text-gray-600">
                     Pin your memories on the map

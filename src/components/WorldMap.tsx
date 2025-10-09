@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Map, Marker } from "pigeon-maps";
+import { Plus, Minus } from "lucide-react";
 
 interface Pin {
   id: string;
@@ -19,6 +20,8 @@ interface WorldMapProps {
 
 export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
+  const [zoom, setZoom] = useState(2);
+  const [center, setCenter] = useState<[number, number]>([20, 0]);
 
   const handleClick = ({ latLng }: { latLng: [number, number] }) => {
     onMapClick(latLng[0], latLng[1]);
@@ -27,8 +30,12 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
   return (
     <div className="w-full h-full bg-white overflow-hidden relative">
       <Map
-        defaultCenter={[20, 0]}
-        defaultZoom={2}
+        center={center}
+        zoom={zoom}
+        onBoundsChanged={({ center, zoom }) => {
+          setCenter(center);
+          setZoom(zoom);
+        }}
         onClick={handleClick}
         dprs={[1, 2]}
         attribution={false}
@@ -87,6 +94,24 @@ export const WorldMap = ({ pins, onMapClick }: WorldMapProps) => {
           </div>
         </div>
       )}
+
+      {/* Zoom Controls */}
+      <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-2">
+        <button
+          onClick={() => setZoom(Math.min(zoom + 1, 18))}
+          className="w-10 h-10 flex items-center justify-center aero-panel glass-button hover:bg-blue-50 text-gray-700 shadow-lg"
+          aria-label="Zoom in"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => setZoom(Math.max(zoom - 1, 1))}
+          className="w-10 h-10 flex items-center justify-center aero-panel glass-button hover:bg-blue-50 text-gray-700 shadow-lg"
+          aria-label="Zoom out"
+        >
+          <Minus className="w-5 h-5" />
+        </button>
+      </div>
     </div>
   );
 };
