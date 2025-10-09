@@ -1,6 +1,13 @@
 import { useState, useEffect } from "react";
 import { Map, Marker } from "pigeon-maps";
 import { Plus, Minus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Pin {
   id: string;
@@ -29,6 +36,7 @@ export const WorldMap = ({
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const [zoom, setZoom] = useState(2);
   const [center, setCenter] = useState<[number, number]>([20, 0]);
+  const isMobile = useIsMobile();
 
   const handleClick = ({ latLng }: { latLng: [number, number] }) => {
     onMapClick(latLng[0], latLng[1]);
@@ -89,8 +97,53 @@ export const WorldMap = ({
         })}
       </Map>
 
-      {/* Popup Card */}
-      {selectedPin && (
+      {/* Mobile Dialog */}
+      {isMobile && selectedPin && (
+        <Dialog
+          open={!!selectedPin}
+          onOpenChange={(open) => !open && handleClosePin()}
+        >
+          <DialogContent className="sm:max-w-[425px] max-w-[90%]">
+            <DialogHeader className="pb-2">
+              <div className="text-xs text-gray-600 mb-2 font-medium">
+                Pin Details
+              </div>
+              <DialogTitle className="text-base font-semibold text-gray-800 break-words pr-6">
+                {selectedPin.title}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 pt-2">
+              {selectedPin.image_url && (
+                <a
+                  href={selectedPin.image_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded">
+                    {selectedPin.image_url}
+                  </div>
+                </a>
+              )}
+              {selectedPin.message && (
+                <p className="text-sm text-gray-700 leading-relaxed">
+                  {selectedPin.message}
+                </p>
+              )}
+              <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 border-t border-gray-200">
+                <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <span>
+                  {new Date(selectedPin.created_at).toLocaleDateString()}
+                  {selectedPin.author && ` • ${selectedPin.author}`}
+                </span>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Desktop Popup Card */}
+      {!isMobile && selectedPin && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
           <div className="aero-panel p-4 shadow-2xl">
             <button

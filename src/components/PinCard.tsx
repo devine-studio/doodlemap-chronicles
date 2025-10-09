@@ -22,7 +22,7 @@ export const PinCard = ({
       </div>
 
       {/* Title */}
-      <h3 className="font-semibold text-sm mb-2 text-gray-800 line-clamp-2">
+      <h3 className="hidden sm:block font-semibold text-sm mb-2 text-gray-800 line-clamp-2">
         {title}
       </h3>
 
