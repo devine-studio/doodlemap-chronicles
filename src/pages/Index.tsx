@@ -28,29 +28,27 @@ const Index = () => {
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // Infinite query for pins
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["pins"],
-    queryFn: async ({ pageParam = 0 }) => {
-      const { data, error } = await supabase
-        .from("pins")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .range(pageParam * PINS_PER_PAGE, (pageParam + 1) * PINS_PER_PAGE - 1);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ["pins"],
+      queryFn: async ({ pageParam = 0 }) => {
+        const { data, error } = await supabase
+          .from("pins")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .range(
+            pageParam * PINS_PER_PAGE,
+            (pageParam + 1) * PINS_PER_PAGE - 1
+          );
 
-      if (error) throw error;
-      return data || [];
-    },
-    getNextPageParam: (lastPage, allPages) => {
-      return lastPage.length === PINS_PER_PAGE ? allPages.length : undefined;
-    },
-    initialPageParam: 0,
-  });
+        if (error) throw error;
+        return data || [];
+      },
+      getNextPageParam: (lastPage, allPages) => {
+        return lastPage.length === PINS_PER_PAGE ? allPages.length : undefined;
+      },
+      initialPageParam: 0,
+    });
 
   const pins = data?.pages.flat() || [];
 
@@ -212,11 +210,11 @@ const Index = () => {
         {/* Mobile Tabs */}
         <div className="lg:hidden flex-1 overflow-hidden fade-in">
           <Tabs defaultValue="map" className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-2 mb-2">
+            <TabsList className="grid w-full grid-cols-2 mb-2 bg-white">
               <TabsTrigger value="map">Map</TabsTrigger>
               <TabsTrigger value="pins">Recent Pins</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
               <div className="aero-panel p-3 h-full flex flex-col overflow-hidden shadow-lg">
                 <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
@@ -270,7 +268,7 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="pins" className="flex-1 mt-0 overflow-hidden">
-              <div className="aero-panel p-3 h-full flex flex-col overflow-hidden shadow-md">
+              <div className="aero-panel p-1 h-full flex flex-col overflow-hidden shadow-md">
                 <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
                   <div className="flex items-center gap-2">
                     <div className="flex gap-1.5">
@@ -288,7 +286,7 @@ const Index = () => {
                 </div>
 
                 <div className="flex-1 overflow-hidden rounded-md border border-gray-300 bg-white">
-                  <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full p-2">
+                  <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full">
                     {pins.map((pin) => (
                       <div
                         key={pin.id}
@@ -305,7 +303,8 @@ const Index = () => {
                                 {pin.author || "Anonymous"}
                               </span>
                               <span className="text-xs text-gray-500">
-                                · {new Date(pin.created_at).toLocaleDateString()}
+                                ·{" "}
+                                {new Date(pin.created_at).toLocaleDateString()}
                               </span>
                             </div>
                             <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">

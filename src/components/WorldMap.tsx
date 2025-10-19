@@ -132,7 +132,8 @@ export const WorldMap = ({
                     {selectedPin.author || "Anonymous"}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {new Date(selectedPin.created_at).toLocaleDateString()}
+                    {new Date(selectedPin.created_at).toLocaleDateString()} at{" "}
+                    {new Date(selectedPin.created_at).toLocaleTimeString()}
                   </div>
                 </div>
               </div>
@@ -171,7 +172,9 @@ export const WorldMap = ({
               className="absolute top-2 right-2 p-1 glass-button rounded-full hover:bg-gray-100"
               aria-label="Close"
             >
-              <span className="text-lg font-semibold leading-none text-gray-600">×</span>
+              <span className="text-lg font-semibold leading-none text-gray-600">
+                ×
+              </span>
             </button>
 
             <div className="flex gap-3 mb-3">
