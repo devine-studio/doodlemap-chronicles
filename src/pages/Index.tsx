@@ -25,6 +25,7 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("map");
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Infinite query for pins
@@ -140,6 +141,7 @@ const Index = () => {
 
   const handlePinClick = (pinId: string) => {
     setSelectedPinId(pinId);
+    setActiveTab("map");
   };
 
   const handleUseMyLocation = () => {
@@ -245,7 +247,11 @@ const Index = () => {
 
         {/* Mobile Tabs */}
         <div className="lg:hidden flex-1 overflow-hidden fade-in">
-          <Tabs defaultValue="map" className="h-full flex flex-col">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="h-full flex flex-col"
+          >
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-1 mb-2">
               <TabsList className="grid w-full grid-cols-2 bg-transparent border-none w-full">
                 <TabsTrigger value="map">Mapa</TabsTrigger>
@@ -455,7 +461,9 @@ const Index = () => {
                     <div
                       key={pin.id}
                       ref={pins.length === index + 1 ? lastPinElementRef : null}
-                      onClick={() => handlePinClick(pin.id)}
+                      onClick={() => {
+                        handlePinClick(pin.id);
+                      }}
                       className="pin-card p-4 cursor-pointer bg-white"
                     >
                       <div className="flex gap-3">
