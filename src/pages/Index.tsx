@@ -240,9 +240,7 @@ const Index = () => {
             <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
               <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-gray-800">
-                    World Map
-                  </h2>
+                  <h2 className="text-lg font-semibold text-gray-800">Mapa</h2>
                 </div>
 
                 {isLoading ? (
@@ -288,11 +286,11 @@ const Index = () => {
               <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-800">
-                    Recent Pins
+                    Pins Recentes
                   </h2>
-                  <span className="text-xs text-gray-600 font-medium">
+                  {/* <span className="text-xs text-gray-600 font-medium">
                     {pins.length} total
-                  </span>
+                  </span> */}
                 </div>
 
                 <div className="flex-1 overflow-hidden rounded-2xl">
@@ -321,13 +319,31 @@ const Index = () => {
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="text-xs text-blue-600 hover:text-blue-700 truncate">
-                                📎 {pin.image_url}
+                              <div className="text-xs text-blue-600 hover:text-blue-700 truncate flex items-center gap-1">
+                                <svg
+                                  className="inline-block w-3 h-3 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                <span className="truncate">
+                                  {pin.image_url}
+                                </span>
                               </div>
                             )}
                             <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
                               <span className="flex items-center gap-1">
-                                📍 {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                                <svg
+                                  className="inline-block w-3 h-3"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
                               </span>
                             </div>
                           </div>
@@ -358,9 +374,7 @@ const Index = () => {
           <div className="w-1/3 flex flex-col overflow-hidden">
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  World Map
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-800">Mapa</h2>
                 <span className="text-xs text-gray-600 font-medium">
                   {selectedLocation.lat.toFixed(4)},{" "}
                   {selectedLocation.lng.toFixed(4)}
@@ -411,11 +425,11 @@ const Index = () => {
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                 <h2 className="text-xl font-semibold text-gray-800">
-                  Recent Pins
+                  Pins Recentes
                 </h2>
-                <span className="text-sm text-gray-600 font-medium">
+                {/* <span className="text-sm text-gray-600 font-medium">
                   {pins.length} total
-                </span>
+                </span> */}
               </div>
               <div className="flex-1 overflow-hidden rounded-2xl">
                 <div className="space-y-3 overflow-y-auto scrollbar-apple h-full">
@@ -447,13 +461,29 @@ const Index = () => {
                             {pin.text}
                           </p>
                           {pin.image_url && (
-                            <div className="text-xs text-blue-600 hover:text-blue-700 truncate">
-                              📎 {pin.image_url}
+                            <div className="text-xs text-blue-600 hover:text-blue-700 truncate flex items-center gap-1">
+                              <svg
+                                className="inline-block w-3 h-3 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                              </svg>
+                              <span className="truncate">{pin.image_url}</span>
                             </div>
                           )}
                           <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
                             <span className="flex items-center gap-1">
-                              📍 {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                              <svg
+                                className="inline-block w-3 h-3"
+                                fill="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                              </svg>
+                              {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
                             </span>
                           </div>
                         </div>
