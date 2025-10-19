@@ -56,7 +56,7 @@ export const CreatePinDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] aero-panel">
+      <DialogContent className="sm:max-w-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-800">
             Create a new pin
@@ -81,7 +81,10 @@ export const CreatePinDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="author" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="author"
+              className="text-sm font-medium text-gray-700"
+            >
               Your name (optional)
             </Label>
             <Input
@@ -93,7 +96,10 @@ export const CreatePinDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="imageUrl"
+              className="text-sm font-medium text-gray-700"
+            >
               Image URL (optional)
             </Label>
             <Input

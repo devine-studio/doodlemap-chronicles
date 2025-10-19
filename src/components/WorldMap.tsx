@@ -96,17 +96,17 @@ export const WorldMap = ({
       <div className="absolute bottom-4 right-4 z-[999] flex flex-col gap-2">
         <button
           onClick={handleZoomIn}
-          className="aero-panel glass-button p-2 hover:scale-105 transition-transform"
+          className="w-11 h-11 flex items-center justify-center bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all"
           aria-label="Zoom in"
         >
-          <Plus className="w-5 h-5 text-gray-700" />
+          <Plus className="w-5 h-5 text-gray-800" />
         </button>
         <button
           onClick={handleZoomOut}
-          className="aero-panel glass-button p-2 hover:scale-105 transition-transform"
+          className="w-11 h-11 flex items-center justify-center bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all"
           aria-label="Zoom out"
         >
-          <Minus className="w-5 h-5 text-gray-700" />
+          <Minus className="w-5 h-5 text-gray-800" />
         </button>
       </div>
 
@@ -116,7 +116,7 @@ export const WorldMap = ({
           open={!!selectedPin}
           onOpenChange={(open) => !open && handleClosePin()}
         >
-          <DialogContent className="sm:max-w-[425px] max-w-[90%] aero-panel">
+          <DialogContent className="sm:max-w-[425px] max-w-[90%] glass-card">
             <DialogHeader className="pb-2">
               <DialogTitle className="text-base font-semibold text-gray-800 break-words pr-6">
                 Pin Details
@@ -124,14 +124,14 @@ export const WorldMap = ({
             </DialogHeader>
             <div className="space-y-3 pt-2">
               <div className="flex gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold shadow-md">
                   {(selectedPin.author || "A")[0].toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-gray-800">
                     {selectedPin.author || "Anonymous"}
                   </div>
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-gray-600">
                     {new Date(selectedPin.created_at).toLocaleDateString()} at{" "}
                     {new Date(selectedPin.created_at).toLocaleTimeString()}
                   </div>
@@ -147,12 +147,12 @@ export const WorldMap = ({
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded">
+                  <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded-xl">
                     📎 {selectedPin.image_url}
                   </div>
                 </a>
               )}
-              <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 border-t border-gray-200">
+              <div className="flex items-center gap-2 text-xs text-gray-600 pt-3 border-t border-gray-200">
                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                 <span>
                   📍 {selectedPin.lat.toFixed(4)}, {selectedPin.lng.toFixed(4)}
@@ -166,19 +166,19 @@ export const WorldMap = ({
       {/* Desktop Popup Card */}
       {!isMobile && selectedPin && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] max-w-md">
-          <div className="aero-panel p-4 shadow-2xl">
+          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-5">
             <button
               onClick={handleClosePin}
-              className="absolute top-2 right-2 p-1 glass-button rounded-full hover:bg-gray-100"
+              className="absolute top-3 right-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
               aria-label="Close"
             >
-              <span className="text-lg font-semibold leading-none text-gray-600">
+              <span className="text-2xl font-semibold leading-none text-gray-600">
                 ×
               </span>
             </button>
 
             <div className="flex gap-3 mb-3">
-              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
                 {(selectedPin.author || "A")[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -206,7 +206,7 @@ export const WorldMap = ({
                 rel="noopener noreferrer"
                 className="block mb-3"
               >
-                <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded">
+                <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded-xl">
                   📎 {selectedPin.image_url}
                 </div>
               </a>
