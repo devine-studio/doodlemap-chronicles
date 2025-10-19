@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { WorldMap } from "@/components/WorldMap";
 import { PinCard } from "@/components/PinCard";
 import { CreatePinDialog } from "@/components/CreatePinDialog";
@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Navigation } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Pin {
   id: string;
@@ -18,17 +20,40 @@ interface Pin {
   author?: string;
 }
 
+const PINS_PER_PAGE = 20;
+
 const Index = () => {
-  const [pins, setPins] = useState<Pin[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
-  const [loading, setLoading] = useState(true);
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Fetch initial pins
-  useEffect(() => {
-    fetchPins();
-  }, []);
+  // Infinite query for pins
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["pins"],
+    queryFn: async ({ pageParam = 0 }) => {
+      const { data, error } = await supabase
+        .from("pins")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(pageParam * PINS_PER_PAGE, (pageParam + 1) * PINS_PER_PAGE - 1);
+
+      if (error) throw error;
+      return data || [];
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === PINS_PER_PAGE ? allPages.length : undefined;
+    },
+    initialPageParam: 0,
+  });
+
+  const pins = data?.pages.flat() || [];
 
   // Set up realtime subscription
   useEffect(() => {
@@ -42,8 +67,6 @@ const Index = () => {
           table: "pins",
         },
         (payload) => {
-          const newPin = payload.new as Pin;
-          setPins((current) => [newPin, ...current]);
           toast.success("New pin added to map!");
         }
       )
@@ -54,22 +77,23 @@ const Index = () => {
     };
   }, []);
 
-  const fetchPins = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("pins")
-        .select("*")
-        .order("created_at", { ascending: false });
+  // Intersection observer for infinite scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.5 }
+    );
 
-      if (error) throw error;
-      setPins(data || []);
-    } catch (error) {
-      console.error("Error fetching pins:", error);
-      toast.error("Error loading pins");
-    } finally {
-      setLoading(false);
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
     }
-  };
+
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleMapClick = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -162,8 +186,6 @@ const Index = () => {
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <div className="">
-                  {/* <MapPin className="w-7 h-7 text-white" strokeWidth={2.5} />
-                   */}
                   <img src="/win7world.png" alt="logo" className="w-16 h-16" />
                 </div>
                 <div>
@@ -171,14 +193,7 @@ const Index = () => {
                     mapin
                   </h1>
                   <p className="text-xs text-blue-500">
-                    Qualquer um pode compartilhar.{" "}
-                    {/* <a
-                      href="https://lemesvini.com"
-                      target="_blank"
-                      className="text-blue-600 underline"
-                    >
-                      lemesvini.
-                    </a> */}
+                    Qualquer um pode compartilhar.
                   </p>
                 </div>
               </div>
@@ -187,7 +202,7 @@ const Index = () => {
                   variant="secondary"
                   size="default"
                   onClick={handleUseMyLocation}
-                  className="gap-2 "
+                  className="gap-2"
                 >
                   <Navigation className="w-4 h-4" />
                   <span className="hidden sm:inline">Minha Localização</span>
@@ -197,111 +212,126 @@ const Index = () => {
           </div>
         </header>
 
-        <div className="flex-1 flex flex-col lg:grid lg:grid-cols-12 gap-4 overflow-hidden">
-          {/* Mobile Recent Pins - Top Half */}
-          <div className="lg:hidden flex flex-col h-[40%] overflow-hidden fade-in">
-            <div className="aero-panel p-3 flex-1 flex flex-col overflow-hidden shadow-md">
-              {/* Window title bar */}
-              <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500"></div>
+        {/* Mobile Tabs */}
+        <div className="lg:hidden flex-1 overflow-hidden fade-in">
+          <Tabs defaultValue="map" className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-2 mb-2">
+              <TabsTrigger value="map">Map</TabsTrigger>
+              <TabsTrigger value="pins">Recent Pins</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
+              <div className="aero-panel p-3 h-full flex flex-col overflow-hidden shadow-lg">
+                <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500"></div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800 ml-2">
+                      World Map
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-gray-800 ml-2">
-                    Recent Pins
+                </div>
+
+                {isLoading ? (
+                  <div className="w-full flex-1 bg-white rounded-md border border-gray-300 flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-sm text-gray-600">Loading map...</p>
+                  </div>
+                ) : (
+                  <div className="flex-1 overflow-hidden rounded-md border border-gray-300">
+                    <WorldMap
+                      pins={pins.map((pin) => ({
+                        ...pin,
+                        imageUrl: pin.image_url,
+                        date: pin.created_at,
+                      }))}
+                      onMapClick={handleMapClick}
+                      selectedPinId={selectedPinId}
+                      onPinSelect={(pin) => setSelectedPinId(pin?.id || null)}
+                    />
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
+                  <span className="text-xs text-gray-600">
+                    Click to add a pin
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleUseMyLocation}
+                    className="gap-1"
+                  >
+                    <Navigation className="w-4 h-4" />
+                    <span>My Location</span>
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="pins" className="flex-1 mt-0 overflow-hidden">
+              <div className="aero-panel p-3 h-full flex flex-col overflow-hidden shadow-md">
+                <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1.5">
+                      <div className="w-3 h-3 rounded-full bg-red-400 border border-red-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-yellow-400 border border-yellow-500"></div>
+                      <div className="w-3 h-3 rounded-full bg-green-400 border border-green-500"></div>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-800 ml-2">
+                      Recent Pins
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-600">
+                    {pins.length} total
                   </span>
                 </div>
-                <span className="text-xs text-gray-600">
-                  {pins.length} total
-                </span>
-              </div>
 
-              <div className="flex-1 overflow-hidden rounded-md border border-gray-300 bg-white">
-                <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full p-2">
-                  {pins.slice(0, 10).map((pin) => (
-                    <button
-                      key={pin.id}
-                      onClick={() => handlePinClick(pin.id)}
-                      className="w-full text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
-                    >
-                      <div className="text-gray-700 font-bold truncate">
-                        {pin.title}
+                <div className="flex-1 overflow-hidden rounded-md border border-gray-300 bg-white">
+                  <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full p-2">
+                    {pins.map((pin) => (
+                      <button
+                        key={pin.id}
+                        onClick={() => handlePinClick(pin.id)}
+                        className="w-full text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
+                      >
+                        <div className="text-gray-700 font-bold truncate">
+                          {pin.title}
+                        </div>
+                        <div className="text-gray-500 text-[10px] mt-1">
+                          {new Date(pin.created_at).toLocaleString()}
+                        </div>
+                        <div className="text-gray-400 font-medium truncate">
+                          by: {pin.author ? pin.author : "Anonymous"}
+                        </div>
+                      </button>
+                    ))}
+                    {pins.length === 0 && !isLoading && (
+                      <div className="text-xs text-gray-500 text-center py-8">
+                        No pins yet
                       </div>
-                      <div className="text-gray-500 text-[10px] mt-1">
-                        {new Date(pin.created_at).toLocaleString()}
+                    )}
+                    {isFetchingNextPage && (
+                      <div className="text-xs text-gray-500 text-center py-4">
+                        Loading more...
                       </div>
-                      <div className="text-gray-400 font-medium truncate">
-                        by: {pin.author ? pin.author : "Anonymous"}
-                      </div>
-                    </button>
-                  ))}
-                  {pins.length === 0 && (
-                    <div className="text-xs text-gray-500 text-center py-8">
-                      No pins yet
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Left Sidebar */}
-          <aside className="hidden lg:block lg:col-span-3 flex flex-col overflow-hidden fade-in">
-            <div className="flex flex-col gap-4 h-full overflow-hidden">
-              {/* Stats Panel */}
-              <div className="aero-panel p-4 shadow-md">
-                <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-300">
-                  Statistics
-                </h2>
-                <div className="space-y-3">
-                  <div className="text-center bg-gradient-to-b from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                    <div className="text-4xl font-bold text-blue-600">
-                      {pins.length}
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">Total Pins</div>
+                    )}
+                    <div ref={observerTarget} className="h-4" />
                   </div>
                 </div>
               </div>
+            </TabsContent>
+          </Tabs>
+        </div>
 
-              {/* Recent Activity */}
-              <div className="aero-panel p-4 flex-1 overflow-hidden shadow-md">
-                <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-300">
-                  Recent Pins
-                </h2>
-                <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full pr-2">
-                  {pins.slice(0, 10).map((pin, index) => (
-                    <button
-                      key={pin.id}
-                      onClick={() => handlePinClick(pin.id)}
-                      className="w-full text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
-                    >
-                      <div className="text-gray-700 font-bold truncate">
-                        {pin.title}
-                      </div>
-                      <div className="text-gray-500 text-[10px] mt-1">
-                        {new Date(pin.created_at).toLocaleString()}
-                      </div>
-                      <div className="text-gray-400 font-medium truncate">
-                        by: {pin.author ? pin.author : "Anonymous"}
-                      </div>
-                    </button>
-                  ))}
-                  {pins.length === 0 && (
-                    <div className="text-xs text-gray-500 text-center py-8">
-                      No pins yet
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Main Map Window - Mobile Bottom Half, Desktop Right Side */}
-          <main className="flex-1 lg:col-span-9 flex flex-col overflow-hidden fade-in">
+        {/* Desktop Layout */}
+        <div className="hidden lg:flex flex-1 gap-4 overflow-hidden fade-in">
+          {/* Map - Left 1/3 */}
+          <div className="w-1/3 flex flex-col overflow-hidden">
             <div className="aero-panel p-3 flex-1 flex flex-col overflow-hidden shadow-lg">
-              {/* Window title bar */}
               <div className="window-chrome px-3 py-2 mb-2 flex items-center justify-between -mt-3 -mx-3 rounded-t-md">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1.5">
@@ -319,7 +349,7 @@ const Index = () => {
                 </span>
               </div>
 
-              {loading ? (
+              {isLoading ? (
                 <div className="w-full flex-1 bg-white rounded-md border border-gray-300 flex flex-col items-center justify-center">
                   <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
                   <p className="text-sm text-gray-600">Loading map...</p>
@@ -341,17 +371,7 @@ const Index = () => {
 
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-200">
                 <span className="text-xs text-gray-600">
-                  {/* <span className="sm:hidden">
-                    Memories. Pinned. By{" "}
-                    <a
-                      href="https://lemesvini.com"
-                      target="_blank"
-                      className="text-blue-600 underline"
-                    >
-                      lemesvini
-                    </a>
-                  </span> */}
-                  <span className="">Click on the map to add a new pin</span>
+                  Click on the map to add a new pin
                 </span>
                 <Button
                   variant="ghost"
@@ -364,7 +384,46 @@ const Index = () => {
                 </Button>
               </div>
             </div>
-          </main>
+          </div>
+
+          {/* Recent Pins - Right 2/3 */}
+          <div className="w-2/3 flex flex-col overflow-hidden">
+            <div className="aero-panel p-4 flex-1 overflow-hidden shadow-md">
+              <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b border-gray-300">
+                Recent Pins ({pins.length} total)
+              </h2>
+              <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full pr-2">
+                {pins.map((pin) => (
+                  <button
+                    key={pin.id}
+                    onClick={() => handlePinClick(pin.id)}
+                    className="w-full text-sm p-3 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
+                  >
+                    <div className="text-gray-700 font-bold truncate">
+                      {pin.title}
+                    </div>
+                    <div className="text-gray-500 text-xs mt-1">
+                      {new Date(pin.created_at).toLocaleString()}
+                    </div>
+                    <div className="text-gray-400 font-medium truncate text-xs">
+                      by: {pin.author ? pin.author : "Anonymous"}
+                    </div>
+                  </button>
+                ))}
+                {pins.length === 0 && !isLoading && (
+                  <div className="text-sm text-gray-500 text-center py-8">
+                    No pins yet
+                  </div>
+                )}
+                {isFetchingNextPage && (
+                  <div className="text-sm text-gray-500 text-center py-4">
+                    Loading more...
+                  </div>
+                )}
+                <div ref={observerTarget} className="h-4" />
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Create Pin Dialog */}
