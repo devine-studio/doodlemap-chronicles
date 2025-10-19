@@ -59,7 +59,7 @@ export const CreatePinDialog = ({
       <DialogContent className="sm:max-w-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold text-gray-800">
-            Create a new pin
+            Criar um novo pin
           </DialogTitle>
           <div className="text-xs text-gray-600 mt-1 font-medium">
             📍 Location: {lat.toFixed(4)}, {lng.toFixed(4)}
@@ -67,16 +67,37 @@ export const CreatePinDialog = ({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="text" className="text-sm font-medium text-gray-700">
-              What's happening?
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label
+                htmlFor="text"
+                className="text-sm font-medium text-gray-700"
+              >
+                O que está acontecendo?
+              </Label>
+              <span
+                className={`text-xs font-medium ${
+                  text.length > 140
+                    ? "text-red-600"
+                    : text.length > 120
+                    ? "text-orange-500"
+                    : "text-gray-500"
+                }`}
+              >
+                {text.length}/140
+              </span>
+            </div>
             <Textarea
               id="text"
-              placeholder="Share your thoughts, memories, or anything you'd like..."
+              placeholder="Compartilhe memórias em lugares incríveis..."
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 140) {
+                  setText(e.target.value);
+                }
+              }}
               className="min-h-[120px] resize-none"
               required
+              maxLength={140}
             />
           </div>
 
@@ -85,11 +106,11 @@ export const CreatePinDialog = ({
               htmlFor="author"
               className="text-sm font-medium text-gray-700"
             >
-              Your name (optional)
+              Seu nome (opcional)
             </Label>
             <Input
               id="author"
-              placeholder="Anonymous"
+              placeholder="Anônimo"
               value={author}
               onChange={(e) => setAuthor(e.target.value)}
             />
@@ -100,12 +121,12 @@ export const CreatePinDialog = ({
               htmlFor="imageUrl"
               className="text-sm font-medium text-gray-700"
             >
-              Image URL (optional)
+              Link (opcional)
             </Label>
             <Input
               id="imageUrl"
               type="url"
-              placeholder="https://example.com/image.jpg"
+              placeholder="compartilhe um link do spotify, youtube, etc..."
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
             />
