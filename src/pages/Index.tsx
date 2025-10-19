@@ -189,7 +189,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h1 className="text-3xl font-bold bg-blue-500 bg-clip-text text-transparent">
-                    mapin
+                    map.in
                   </h1>
                   <p className="text-sm text-gray-700 font-medium">
                     Qualquer um pode compartilhar.
@@ -201,7 +201,7 @@ const Index = () => {
                   variant="default"
                   size="default"
                   onClick={handleUseMyLocation}
-                  className="gap-2"
+                  className="gap-2 hidden md:flex "
                 >
                   <Navigation className="w-4 h-4" />
                   <span className="hidden sm:inline">Novo Pin</span>
