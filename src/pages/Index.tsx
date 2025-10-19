@@ -13,8 +13,7 @@ interface Pin {
   id: string;
   lat: number;
   lng: number;
-  title: string;
-  message?: string;
+  text: string;
   image_url?: string;
   created_at: string;
   author?: string;
@@ -101,8 +100,7 @@ const Index = () => {
   };
 
   const handleCreatePin = async (pinData: {
-    title: string;
-    message?: string;
+    text: string;
     imageUrl?: string;
     author?: string;
     lat: number;
@@ -110,8 +108,7 @@ const Index = () => {
   }) => {
     try {
       const { error } = await supabase.from("pins").insert({
-        title: pinData.title,
-        message: pinData.message,
+        text: pinData.text,
         image_url: pinData.imageUrl,
         author: pinData.author,
         lat: pinData.lat,
@@ -293,21 +290,40 @@ const Index = () => {
                 <div className="flex-1 overflow-hidden rounded-md border border-gray-300 bg-white">
                   <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full p-2">
                     {pins.map((pin) => (
-                      <button
+                      <div
                         key={pin.id}
                         onClick={() => handlePinClick(pin.id)}
-                        className="w-full text-xs p-2 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
+                        className="tweet-card p-4 cursor-pointer"
                       >
-                        <div className="text-gray-700 font-bold truncate">
-                          {pin.title}
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                            {(pin.author || "A")[0].toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold text-gray-800 text-sm">
+                                {pin.author || "Anonymous"}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                · {new Date(pin.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">
+                              {pin.text}
+                            </p>
+                            {pin.image_url && (
+                              <div className="text-xs text-blue-600 hover:text-blue-700 truncate">
+                                📎 {pin.image_url}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                📍 {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-gray-500 text-[10px] mt-1">
-                          {new Date(pin.created_at).toLocaleString()}
-                        </div>
-                        <div className="text-gray-400 font-medium truncate">
-                          by: {pin.author ? pin.author : "Anonymous"}
-                        </div>
-                      </button>
+                      </div>
                     ))}
                     {pins.length === 0 && !isLoading && (
                       <div className="text-xs text-gray-500 text-center py-8">
@@ -394,21 +410,44 @@ const Index = () => {
               </h2>
               <div className="space-y-2 overflow-y-auto scrollbar-win7 h-full pr-2">
                 {pins.map((pin) => (
-                  <button
+                  <div
                     key={pin.id}
                     onClick={() => handlePinClick(pin.id)}
-                    className="w-full text-sm p-3 bg-white rounded border border-gray-200 hover:bg-blue-50 hover:border-blue-300 transition-colors cursor-pointer text-left"
+                    className="tweet-card p-4 cursor-pointer"
                   >
-                    <div className="text-gray-700 font-bold truncate">
-                      {pin.title}
+                    <div className="flex gap-3">
+                      <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+                        {(pin.author || "A")[0].toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <span className="font-semibold text-gray-800">
+                            {pin.author || "Anonymous"}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            · {new Date(pin.created_at).toLocaleDateString()} at{" "}
+                            {new Date(pin.created_at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">
+                          {pin.text}
+                        </p>
+                        {pin.image_url && (
+                          <div className="text-xs text-blue-600 hover:text-blue-700 truncate">
+                            📎 {pin.image_url}
+                          </div>
+                        )}
+                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                          <span className="flex items-center gap-1">
+                            📍 {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-gray-500 text-xs mt-1">
-                      {new Date(pin.created_at).toLocaleString()}
-                    </div>
-                    <div className="text-gray-400 font-medium truncate text-xs">
-                      by: {pin.author ? pin.author : "Anonymous"}
-                    </div>
-                  </button>
+                  </div>
                 ))}
                 {pins.length === 0 && !isLoading && (
                   <div className="text-sm text-gray-500 text-center py-8">

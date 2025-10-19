@@ -22,8 +22,7 @@ export type Database = {
           image_url: string | null
           lat: number
           lng: number
-          message: string | null
-          title: string
+          text: string
         }
         Insert: {
           author?: string | null
@@ -32,8 +31,7 @@ export type Database = {
           image_url?: string | null
           lat: number
           lng: number
-          message?: string | null
-          title: string
+          text: string
         }
         Update: {
           author?: string | null
@@ -42,8 +40,7 @@ export type Database = {
           image_url?: string | null
           lat?: number
           lng?: number
-          message?: string | null
-          title?: string
+          text?: string
         }
         Relationships: []
       }

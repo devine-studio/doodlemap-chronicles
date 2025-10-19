@@ -13,25 +13,24 @@ interface Pin {
   id: string;
   lat: number;
   lng: number;
-  title: string;
-  message?: string;
+  text: string;
   image_url?: string;
-  author?: string;
   created_at: string;
+  author?: string;
 }
 
 interface WorldMapProps {
-  pins: Pin[];
+  pins: (Pin & { imageUrl?: string; date?: string })[];
   onMapClick: (lat: number, lng: number) => void;
-  onPinSelect?: (pin: Pin | null) => void;
   selectedPinId?: string | null;
+  onPinSelect?: (pin: Pin | null) => void;
 }
 
 export const WorldMap = ({
   pins,
   onMapClick,
-  onPinSelect,
   selectedPinId,
+  onPinSelect,
 }: WorldMapProps) => {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const [zoom, setZoom] = useState(2);
@@ -42,34 +41,37 @@ export const WorldMap = ({
     onMapClick(latLng[0], latLng[1]);
   };
 
-  // Handle external pin selection
+  const handleMarkerClick = (pin: Pin) => {
+    setSelectedPin(pin);
+    onPinSelect?.(pin);
+  };
+
+  const handleClosePin = () => {
+    setSelectedPin(null);
+    onPinSelect?.(null);
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 1, 18));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 1, 1));
+  };
+
   useEffect(() => {
     if (selectedPinId) {
       const pin = pins.find((p) => p.id === selectedPinId);
       if (pin) {
         setSelectedPin(pin);
         setCenter([pin.lat, pin.lng]);
-        setZoom(15);
+        setZoom(10);
       }
     }
   }, [selectedPinId, pins]);
 
-  const handlePinClick = (pin: Pin) => {
-    setSelectedPin(pin);
-    if (onPinSelect) {
-      onPinSelect(pin);
-    }
-  };
-
-  const handleClosePin = () => {
-    setSelectedPin(null);
-    if (onPinSelect) {
-      onPinSelect(null);
-    }
-  };
-
   return (
-    <div className="w-full h-full bg-white overflow-hidden relative">
+    <div className="relative w-full h-full">
       <Map
         center={center}
         zoom={zoom}
@@ -78,24 +80,35 @@ export const WorldMap = ({
           setZoom(zoom);
         }}
         onClick={handleClick}
-        dprs={[1, 2]}
         attribution={false}
-        metaWheelZoom={true}
-        twoFingerDrag={false}
       >
-        {pins.map((pin) => {
-          const isSelected = selectedPin?.id === pin.id;
-          return (
-            <Marker
-              key={pin.id}
-              anchor={[pin.lat, pin.lng]}
-              color={isSelected ? "#EF4444" : "#0078D7"}
-              width={40}
-              onClick={() => handlePinClick(pin)}
-            />
-          );
-        })}
+        {pins.map((pin) => (
+          <Marker
+            key={pin.id}
+            anchor={[pin.lat, pin.lng]}
+            color={selectedPinId === pin.id ? "#0078d4" : "#ff4444"}
+            onClick={() => handleMarkerClick(pin)}
+          />
+        ))}
       </Map>
+
+      {/* Zoom Controls */}
+      <div className="absolute bottom-4 right-4 z-[999] flex flex-col gap-2">
+        <button
+          onClick={handleZoomIn}
+          className="aero-panel glass-button p-2 hover:scale-105 transition-transform"
+          aria-label="Zoom in"
+        >
+          <Plus className="w-5 h-5 text-gray-700" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="aero-panel glass-button p-2 hover:scale-105 transition-transform"
+          aria-label="Zoom out"
+        >
+          <Minus className="w-5 h-5 text-gray-700" />
+        </button>
+      </div>
 
       {/* Mobile Dialog */}
       {isMobile && selectedPin && (
@@ -103,16 +116,29 @@ export const WorldMap = ({
           open={!!selectedPin}
           onOpenChange={(open) => !open && handleClosePin()}
         >
-          <DialogContent className="sm:max-w-[425px] max-w-[90%]">
+          <DialogContent className="sm:max-w-[425px] max-w-[90%] aero-panel">
             <DialogHeader className="pb-2">
-              <div className="text-xs text-gray-600 mb-2 font-medium">
-                Pin Details
-              </div>
               <DialogTitle className="text-base font-semibold text-gray-800 break-words pr-6">
-                {selectedPin.title}
+                Pin Details
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-3 pt-2">
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold">
+                  {(selectedPin.author || "A")[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-gray-800">
+                    {selectedPin.author || "Anonymous"}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(selectedPin.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-700 leading-relaxed break-words whitespace-pre-wrap">
+                {selectedPin.text}
+              </p>
               {selectedPin.image_url && (
                 <a
                   href={selectedPin.image_url}
@@ -121,20 +147,14 @@ export const WorldMap = ({
                   className="block"
                 >
                   <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded">
-                    {selectedPin.image_url}
+                    📎 {selectedPin.image_url}
                   </div>
                 </a>
-              )}
-              {selectedPin.message && (
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  {selectedPin.message}
-                </p>
               )}
               <div className="flex items-center gap-2 text-xs text-gray-500 pt-3 border-t border-gray-200">
                 <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                 <span>
-                  {new Date(selectedPin.created_at).toLocaleDateString()}
-                  {selectedPin.author && ` • ${selectedPin.author}`}
+                  📍 {selectedPin.lat.toFixed(4)}, {selectedPin.lng.toFixed(4)}
                 </span>
               </div>
             </div>
@@ -148,17 +168,34 @@ export const WorldMap = ({
           <div className="aero-panel p-4 shadow-2xl">
             <button
               onClick={handleClosePin}
-              className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center glass-button rounded hover:bg-red-100 text-gray-700"
+              className="absolute top-2 right-2 p-1 glass-button rounded-full hover:bg-gray-100"
               aria-label="Close"
             >
-              <span className="text-lg font-semibold leading-none">×</span>
+              <span className="text-lg font-semibold leading-none text-gray-600">×</span>
             </button>
-            <div className="text-xs text-gray-600 mb-2 font-medium">
-              Pin Details
+
+            <div className="flex gap-3 mb-3">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold text-lg">
+                {(selectedPin.author || "A")[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-gray-800">
+                  {selectedPin.author || "Anonymous"}
+                </div>
+                <div className="text-xs text-gray-500">
+                  {new Date(selectedPin.created_at).toLocaleDateString()} at{" "}
+                  {new Date(selectedPin.created_at).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </div>
             </div>
-            <h3 className="font-semibold text-base mb-3 pr-8 text-gray-800">
-              {selectedPin.title}
-            </h3>
+
+            <p className="text-sm text-gray-700 leading-relaxed mb-3 break-words whitespace-pre-wrap">
+              {selectedPin.text}
+            </p>
+
             {selectedPin.image_url && (
               <a
                 href={selectedPin.image_url}
@@ -166,42 +203,21 @@ export const WorldMap = ({
                 rel="noopener noreferrer"
                 className="block mb-3"
               >
-                <div className="text-sm text-blue-600 hover:text-blue-700 underline truncate bg-blue-50 border border-blue-200 p-2 rounded">
-                  {selectedPin.image_url}
+                <div className="text-sm text-blue-600 hover:text-blue-700 underline break-all bg-blue-50 border border-blue-200 p-2 rounded">
+                  📎 {selectedPin.image_url}
                 </div>
               </a>
             )}
-            {selectedPin.message && (
-              <p className="text-sm mb-3 text-gray-700">
-                {selectedPin.message}
-              </p>
-            )}
+
             <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
               <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-              {new Date(selectedPin.created_at).toLocaleDateString()}
-              {selectedPin.author && ` • ${selectedPin.author}`}
+              <span>
+                📍 {selectedPin.lat.toFixed(4)}, {selectedPin.lng.toFixed(4)}
+              </span>
             </div>
           </div>
         </div>
       )}
-
-      {/* Zoom Controls */}
-      <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-2">
-        <button
-          onClick={() => setZoom(Math.min(zoom + 1, 18))}
-          className="w-10 h-10 flex items-center justify-center aero-panel glass-button hover:bg-blue-50 text-gray-700 shadow-lg"
-          aria-label="Zoom in"
-        >
-          <Plus className="w-5 h-5" />
-        </button>
-        <button
-          onClick={() => setZoom(Math.max(zoom - 1, 1))}
-          className="w-10 h-10 flex items-center justify-center aero-panel glass-button hover:bg-blue-50 text-gray-700 shadow-lg"
-          aria-label="Zoom out"
-        >
-          <Minus className="w-5 h-5" />
-        </button>
-      </div>
     </div>
   );
 };
