@@ -25,7 +25,7 @@ const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
-  const observerTarget = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // Infinite query for pins
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
@@ -74,23 +74,39 @@ const Index = () => {
     };
   }, []);
 
-  // Intersection observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+  // Callback ref for intersection observer
+  const lastPinElementRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (isLoading) return;
+      if (isFetchingNextPage) return;
+
+      // Disconnect previous observer
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+
+      // Create new observer
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasNextPage) {
+            console.log("Intersection detected, fetching next page...");
+            fetchNextPage();
+          }
+        },
+        {
+          threshold: 0.1,
+          rootMargin: "200px",
         }
-      },
-      { threshold: 0.5 }
-    );
+      );
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+      // Observe the new node
+      if (node) {
+        observerRef.current.observe(node);
+        console.log("Observer attached to last pin element");
+      }
+    },
+    [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]
+  );
 
   const handleMapClick = (lat: number, lng: number) => {
     setSelectedLocation({ lat, lng });
@@ -232,15 +248,15 @@ const Index = () => {
           <Tabs defaultValue="map" className="h-full flex flex-col">
             <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-1 mb-2">
               <TabsList className="grid w-full grid-cols-2 bg-transparent border-none w-full">
-                <TabsTrigger value="map">Map</TabsTrigger>
-                <TabsTrigger value="pins">Recent Pins</TabsTrigger>
+                <TabsTrigger value="map">Mapa</TabsTrigger>
+                <TabsTrigger value="pins">Pins Recentes</TabsTrigger>
               </TabsList>
             </div>
 
             <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
               <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="text-lg font-semibold text-gray-800">Mapa</h2>
+                <div className="flex items-center justify-between mb-3 hidden md:block">
+                  <h2 className="text-lg font-semibold text-gray-800 ">Mapa</h2>
                 </div>
 
                 {isLoading ? (
@@ -284,7 +300,7 @@ const Index = () => {
 
             <TabsContent value="pins" className="flex-1 mt-0 overflow-hidden">
               <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 hidden md:block">
                   <h2 className="text-lg font-semibold text-gray-800">
                     Pins Recentes
                   </h2>
@@ -295,9 +311,12 @@ const Index = () => {
 
                 <div className="flex-1 overflow-hidden rounded-2xl">
                   <div className="space-y-2 overflow-y-auto scrollbar-apple h-full">
-                    {pins.map((pin) => (
+                    {pins.map((pin, index) => (
                       <div
                         key={pin.id}
+                        ref={
+                          pins.length === index + 1 ? lastPinElementRef : null
+                        }
                         onClick={() => handlePinClick(pin.id)}
                         className="pin-card p-3 cursor-pointer bg-white"
                       >
@@ -360,7 +379,6 @@ const Index = () => {
                         Loading more...
                       </div>
                     )}
-                    <div ref={observerTarget} className="h-4" />
                   </div>
                 </div>
               </div>
@@ -433,9 +451,10 @@ const Index = () => {
               </div>
               <div className="flex-1 overflow-hidden rounded-2xl">
                 <div className="space-y-3 overflow-y-auto scrollbar-apple h-full">
-                  {pins.map((pin) => (
+                  {pins.map((pin, index) => (
                     <div
                       key={pin.id}
+                      ref={pins.length === index + 1 ? lastPinElementRef : null}
                       onClick={() => handlePinClick(pin.id)}
                       className="pin-card p-4 cursor-pointer bg-white"
                     >
@@ -500,7 +519,6 @@ const Index = () => {
                       Loading more...
                     </div>
                   )}
-                  <div ref={observerTarget} className="h-4" />
                 </div>
               </div>
             </div>
