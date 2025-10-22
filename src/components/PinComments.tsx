@@ -106,9 +106,9 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
               Loading comments...
             </div>
           ) : comments.length > 0 ? (
-            <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-apple">
+            <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-apple w-full">
               {comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-50 rounded-lg p-2">
+                <div key={comment.id} className="bg-gray-50 rounded-lg p-2 w-full">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-semibold text-gray-800">
                       {comment.author || "Anonymous"}
@@ -117,7 +117,7 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
                       {new Date(comment.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-700 break-words">
+                  <p className="text-xs text-gray-700 break-words w-full">
                     {comment.text}
                   </p>
                 </div>
@@ -135,24 +135,25 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
               placeholder="Your name (optional)"
               value={authorName}
               onChange={(e) => setAuthorName(e.target.value)}
-              className="text-xs h-8"
+              className="text-xs h-8 w-full"
               maxLength={50}
             />
-            <div className="flex gap-2">
-              <Textarea
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="text-xs min-h-[60px] resize-none"
-                maxLength={500}
-              />
+            <Textarea
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="text-xs min-h-[60px] resize-none w-full"
+              maxLength={500}
+            />
+            <div className="flex justify-end">
               <Button
                 type="submit"
                 size="sm"
                 disabled={!newComment.trim() || isSubmitting}
-                className="h-[60px] px-3"
+                className="gap-2"
               >
                 <Send className="w-4 h-4" />
+                <span>Comment</span>
               </Button>
             </div>
           </form>
