@@ -30,7 +30,7 @@ export const WorldMap = ({
   onPinSelect,
 }: WorldMapProps) => {
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
-  const [zoom, setZoom] = useState(2);
+  const [zoom, setZoom] = useState(3);
   const [center, setCenter] = useState<[number, number]>([20, 0]);
 
   const handleClick = ({ latLng }: { latLng: [number, number] }) => {
@@ -188,6 +188,8 @@ export const WorldMap = ({
               <PinComments
                 pinId={selectedPin.id}
                 initialCommentCount={selectedPin.comment_count || 0}
+                showComments={false}
+                onToggleComments={() => {}}
               />
             </div>
           </div>

@@ -5,7 +5,14 @@ import { CreatePinDialog } from "@/components/CreatePinDialog";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
 import { Button } from "@/components/ui/button";
-import { MapPin, Plus, Navigation } from "lucide-react";
+import {
+  MapPin,
+  Plus,
+  Navigation,
+  Eye,
+  ArrowBigLeftDashIcon,
+  ArrowBigRightDashIcon,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -30,47 +37,61 @@ const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState({ lat: 0, lng: 0 });
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("map");
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(
+    new Set()
+  );
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const [showPins, setShowPins] = useState(false);
 
   // Infinite query for pins with likes and comments counts
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey: ["pins"],
-      queryFn: async ({ pageParam = 0 }) => {
-        const { data: pinsData, error } = await supabase
-          .from("pins")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .range(
-            pageParam * PINS_PER_PAGE,
-            (pageParam + 1) * PINS_PER_PAGE - 1
-          );
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    refetch,
+  } = useInfiniteQuery({
+    queryKey: ["pins"],
+    queryFn: async ({ pageParam = 0 }) => {
+      const { data: pinsData, error } = await supabase
+        .from("pins")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(pageParam * PINS_PER_PAGE, (pageParam + 1) * PINS_PER_PAGE - 1);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Fetch like and comment counts for each pin
-        const pinsWithCounts = await Promise.all(
-          (pinsData || []).map(async (pin) => {
-            const [{ count: likeCount }, { count: commentCount }] = await Promise.all([
-              supabase.from("likes").select("*", { count: "exact", head: true }).eq("pin_id", pin.id),
-              supabase.from("comments").select("*", { count: "exact", head: true }).eq("pin_id", pin.id),
+      // Fetch like and comment counts for each pin
+      const pinsWithCounts = await Promise.all(
+        (pinsData || []).map(async (pin) => {
+          const [{ count: likeCount }, { count: commentCount }] =
+            await Promise.all([
+              supabase
+                .from("likes")
+                .select("*", { count: "exact", head: true })
+                .eq("pin_id", pin.id),
+              supabase
+                .from("comments")
+                .select("*", { count: "exact", head: true })
+                .eq("pin_id", pin.id),
             ]);
 
-            return {
-              ...pin,
-              like_count: likeCount || 0,
-              comment_count: commentCount || 0,
-            };
-          })
-        );
+          return {
+            ...pin,
+            like_count: likeCount || 0,
+            comment_count: commentCount || 0,
+          };
+        })
+      );
 
-        return pinsWithCounts;
-      },
-      getNextPageParam: (lastPage, allPages) => {
-        return lastPage.length === PINS_PER_PAGE ? allPages.length : undefined;
-      },
-      initialPageParam: 0,
-    });
+      return pinsWithCounts;
+    },
+    getNextPageParam: (lastPage, allPages) => {
+      return lastPage.length === PINS_PER_PAGE ? allPages.length : undefined;
+    },
+    initialPageParam: 0,
+  });
 
   const pins = data?.pages.flat() || [];
 
@@ -165,6 +186,28 @@ const Index = () => {
     setActiveTab("map");
   };
 
+  const toggleComments = (pinId: string) => {
+    setExpandedComments((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(pinId)) {
+        newSet.delete(pinId);
+      } else {
+        newSet.add(pinId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleCommentAdded = (pinId: string) => {
+    // Refetch the pins data to update comment counts
+    refetch();
+  };
+
+  const handleLikeAdded = () => {
+    // Refetch the pins data to update like counts
+    refetch();
+  };
+
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported by your browser");
@@ -215,7 +258,7 @@ const Index = () => {
 
       <div className="relative z-10 flex flex-col h-full max-w-[1600px] mx-auto w-full p-4 gap-4">
         {/* Header */}
-        <header className="fade-in">
+        <header className="fade-in md:hidden">
           <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-5">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -245,22 +288,6 @@ const Index = () => {
                   <Navigation className="w-4 h-4" />
                   <span className="hidden sm:inline">Novo Pin</span>
                 </Button>
-                {/* <a
-                  href="https://github.com/lemesvini"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
-                  title="GitHub"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    className="w-6 h-6 text-gray-700"
-                  >
-                    <path d="M12 2C6.477 2 2 6.484 2 12.021c0 4.428 2.874 8.185 6.839 9.504.5.092.682-.217.682-.483 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.153-1.11-1.46-1.11-1.46-.908-.621.069-.609.069-.609 1.004.071 1.532 1.032 1.532 1.032.892 1.53 2.341 1.088 2.91.832.091-.647.35-1.088.635-1.34-2.221-.253-4.556-1.112-4.556-4.946 0-1.092.39-1.987 1.029-2.686-.104-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.52 9.52 0 0 1 2.504.336c1.91-1.296 2.748-1.026 2.748-1.026.545 1.378.203 2.397.1 2.65.64.699 1.028 1.594 1.028 2.686 0 3.842-2.338 4.69-4.566 4.938.359.309.678.92.678 1.857 0 1.34-.012 2.421-.012 2.75 0 .268.18.58.688.482C19.126 20.2 22 16.448 22 12.021 22 6.484 17.523 2 12 2z" />
-                  </svg>
-                </a> */}
               </div>
             </div>
           </div>
@@ -392,14 +419,42 @@ const Index = () => {
                                 {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
                               </span>
                             </div>
-                            <div className="flex items-center gap-4 mt-2">
-                              <PinLikeButton
-                                pinId={pin.id}
-                                initialLikeCount={pin.like_count || 0}
-                              />
+                            <div className="mt-2">
+                              <div className="flex items-center gap-4">
+                                <PinLikeButton
+                                  pinId={pin.id}
+                                  initialLikeCount={pin.like_count || 0}
+                                  onLikeAdded={handleLikeAdded}
+                                />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleComments(pin.id);
+                                  }}
+                                  className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                  </svg>
+                                  <span className="font-medium">
+                                    {pin.comment_count || 0}
+                                  </span>
+                                </button>
+                              </div>
                               <PinComments
                                 pinId={pin.id}
                                 initialCommentCount={pin.comment_count || 0}
+                                showComments={expandedComments.has(pin.id)}
+                                onToggleComments={() => toggleComments(pin.id)}
+                                onCommentAdded={() =>
+                                  handleCommentAdded(pin.id)
+                                }
                               />
                             </div>
                           </div>
@@ -426,14 +481,47 @@ const Index = () => {
         {/* Desktop Layout */}
         <div className="hidden lg:flex flex-1 gap-4 overflow-hidden fade-in">
           {/* Map - Left 1/3 */}
-          <div className="w-1/3 flex flex-col overflow-hidden">
+          <div className="w-1/3 flex-1 flex-col overflow-hidden">
             <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">Mapa</h2>
+                <div className="flex items-center gap-3 justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    <div className="">
+                      <img
+                        src="/win7world.png"
+                        alt="logo"
+                        className="w-14 h-14 drop-shadow-lg"
+                      />
+                    </div>
+                    <div>
+                      <h1 className="text-3xl font-bold bg-black/70 font-sans font-bold bg-clip-text text-transparent">
+                        mapin
+                      </h1>
+                      <p className="text-sm text-gray-700 font-medium">
+                        Qualquer um pode compartilhar.
+                      </p>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPins(!showPins)}
+                    className="gap-1"
+                  >
+                    {showPins ? (
+                      <ArrowBigRightDashIcon className="w-4 h-4" />
+                    ) : (
+                      <ArrowBigLeftDashIcon className="w-4 h-4" />
+                    )}
+                    {!showPins ? <span>Ver Pins</span> : null}
+                  </Button>
+                </div>
+                {/* <h2 className="text-xl font-semibold text-gray-800">Mapa</h2>
                 <span className="text-xs text-gray-600 font-medium">
                   {selectedLocation.lat.toFixed(4)},{" "}
                   {selectedLocation.lng.toFixed(4)}
-                </span>
+                </span> */}
               </div>
 
               {isLoading ? (
@@ -460,10 +548,10 @@ const Index = () => {
 
               <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
                 <span className="text-xs text-gray-600 font-medium">
-                  Click on the map to add a new pin
+                  Clique no mapa para adicionar um novo pin
                 </span>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={handleUseMyLocation}
                   className="gap-1"
@@ -476,102 +564,140 @@ const Index = () => {
           </div>
 
           {/* Recent Pins - Right 2/3 */}
-          <div className="w-2/3 flex flex-col overflow-hidden">
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Pins Recentes
-                </h2>
-                {/* <span className="text-sm text-gray-600 font-medium">
+          {showPins && (
+            <div className="w-2/3 flex flex-col overflow-hidden">
+              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    Pins Recentes
+                  </h2>
+                  {/* <span className="text-sm text-gray-600 font-medium">
                   {pins.length} total
                 </span> */}
-              </div>
-              <div className="flex-1 overflow-hidden rounded-2xl">
-                <div className="space-y-3 overflow-y-auto scrollbar-apple h-full">
-                  {pins.map((pin, index) => (
-                    <div
-                      key={pin.id}
-                      ref={pins.length === index + 1 ? lastPinElementRef : null}
-                      onClick={() => {
-                        handlePinClick(pin.id);
-                      }}
-                      className="pin-card p-4 cursor-pointer bg-white"
-                    >
-                      <div className="flex gap-3">
-                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
-                          {(pin.author || "A")[0].toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <span className="font-semibold text-gray-800">
-                              {pin.author || "Anonymous"}
-                            </span>
-                            <span className="text-xs text-gray-600">
-                              · {new Date(pin.created_at).toLocaleDateString()}{" "}
-                              at{" "}
-                              {new Date(pin.created_at).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
+                </div>
+                <div className="flex-1 overflow-hidden rounded-2xl">
+                  <div className="space-y-3 overflow-y-auto scrollbar-apple h-full">
+                    {pins.map((pin, index) => (
+                      <div
+                        key={pin.id}
+                        ref={
+                          pins.length === index + 1 ? lastPinElementRef : null
+                        }
+                        onClick={() => {
+                          handlePinClick(pin.id);
+                        }}
+                        className="pin-card p-4 cursor-pointer bg-white"
+                      >
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+                            {(pin.author || "A")[0].toUpperCase()}
                           </div>
-                          <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">
-                            {pin.text}
-                          </p>
-                          {pin.image_url && (
-                            <div className="text-xs text-blue-600 hover:text-blue-700 truncate flex items-center gap-1">
-                              <svg
-                                className="inline-block w-3 h-3 flex-shrink-0"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                              </svg>
-                              <span className="truncate">{pin.image_url}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="font-semibold text-gray-800">
+                                {pin.author || "Anonymous"}
+                              </span>
+                              <span className="text-xs text-gray-600">
+                                ·{" "}
+                                {new Date(pin.created_at).toLocaleDateString()}{" "}
+                                at{" "}
+                                {new Date(pin.created_at).toLocaleTimeString(
+                                  [],
+                                  {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  }
+                                )}
+                              </span>
                             </div>
-                          )}
-                          <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <svg
-                                className="inline-block w-3 h-3"
-                                fill="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                              </svg>
-                                  {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                            <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">
+                              {pin.text}
+                            </p>
+                            {pin.image_url && (
+                              <div className="text-xs text-blue-600 hover:text-blue-700 truncate flex items-center gap-1">
+                                <svg
+                                  className="inline-block w-3 h-3 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                </svg>
+                                <span className="truncate">
+                                  {pin.image_url}
                                 </span>
                               </div>
-                              <div className="flex items-center gap-4 mt-2">
+                            )}
+                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
+                              <span className="flex items-center gap-1">
+                                <svg
+                                  className="inline-block w-3 h-3"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                                </svg>
+                                {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                              </span>
+                            </div>
+                            <div className="mt-2">
+                              <div className="flex items-center gap-4">
                                 <PinLikeButton
                                   pinId={pin.id}
                                   initialLikeCount={pin.like_count || 0}
+                                  onLikeAdded={handleLikeAdded}
                                 />
-                                <PinComments
-                                  pinId={pin.id}
-                                  initialCommentCount={pin.comment_count || 0}
-                                />
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleComments(pin.id);
+                                  }}
+                                  className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                >
+                                  <svg
+                                    className="w-4 h-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                                  </svg>
+                                  <span className="font-medium">
+                                    {pin.comment_count || 0}
+                                  </span>
+                                </button>
                               </div>
+                              <PinComments
+                                pinId={pin.id}
+                                initialCommentCount={pin.comment_count || 0}
+                                showComments={expandedComments.has(pin.id)}
+                                onToggleComments={() => toggleComments(pin.id)}
+                                onCommentAdded={() =>
+                                  handleCommentAdded(pin.id)
+                                }
+                              />
                             </div>
                           </div>
                         </div>
-                      ))}
-                      {pins.length === 0 && !isLoading && (
-                    <div className="text-sm text-gray-600 text-center py-8 font-medium">
-                      No pins yet
-                    </div>
-                  )}
-                  {isFetchingNextPage && (
-                    <div className="text-sm text-gray-600 text-center py-4 font-medium">
-                      Loading more...
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                    {pins.length === 0 && !isLoading && (
+                      <div className="text-sm text-gray-600 text-center py-8 font-medium">
+                        No pins yet
+                      </div>
+                    )}
+                    {isFetchingNextPage && (
+                      <div className="text-sm text-gray-600 text-center py-4 font-medium">
+                        Loading more...
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Create Pin Dialog */}

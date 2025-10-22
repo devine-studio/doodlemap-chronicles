@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -16,24 +16,26 @@ interface Comment {
 interface PinCommentsProps {
   pinId: string;
   initialCommentCount: number;
+  showComments: boolean;
+  onToggleComments: () => void;
+  onCommentAdded?: () => void;
 }
 
-export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) => {
+export const PinComments = ({
+  pinId,
+  initialCommentCount,
+  showComments,
+  onToggleComments,
+  onCommentAdded,
+}: PinCommentsProps) => {
   const [commentCount, setCommentCount] = useState(initialCommentCount);
-  const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (showComments) {
-      loadComments();
-    }
-  }, [showComments, pinId]);
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -50,7 +52,13 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [pinId]);
+
+  useEffect(() => {
+    if (showComments) {
+      loadComments();
+    }
+  }, [showComments, pinId, loadComments]);
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +82,11 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
       setCommentCount((prev) => prev + 1);
       setNewComment("");
       toast.success("Comment added!");
+
+      // Notify parent component that a comment was added
+      if (onCommentAdded) {
+        onCommentAdded();
+      }
     } catch (error) {
       console.error("Error adding comment:", error);
       toast.error("Failed to add comment");
@@ -83,22 +96,11 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
   };
 
   return (
-    <div className="mt-2">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setShowComments(!showComments);
-        }}
-        className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
-      >
-        <MessageCircle className="w-4 h-4" />
-        <span className="font-medium">{commentCount}</span>
-      </button>
-
+    <>
       {showComments && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="mt-3 pt-3 border-t border-gray-200 space-y-3"
+          className="mt-3 pt-3 border-t border-gray-200 space-y-3 w-full"
         >
           {/* Comments list */}
           {isLoading ? (
@@ -108,7 +110,10 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
           ) : comments.length > 0 ? (
             <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-apple w-full">
               {comments.map((comment) => (
-                <div key={comment.id} className="bg-gray-50 rounded-lg p-2 w-full">
+                <div
+                  key={comment.id}
+                  className="bg-gray-50 rounded-lg p-2 w-full"
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-semibold text-gray-800">
                       {comment.author || "Anonymous"}
@@ -159,6 +164,6 @@ export const PinComments = ({ pinId, initialCommentCount }: PinCommentsProps) =>
           </form>
         </div>
       )}
-    </div>
+    </>
   );
 };
