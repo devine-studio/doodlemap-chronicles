@@ -14,6 +14,64 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          author: string | null
+          created_at: string
+          id: string
+          pin_id: string
+          text: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          pin_id: string
+          text: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          id?: string
+          pin_id?: string
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_pin_id_fkey"
+            columns: ["pin_id"]
+            isOneToOne: false
+            referencedRelation: "pins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      likes: {
+        Row: {
+          created_at: string
+          id: string
+          pin_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          pin_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          pin_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "likes_pin_id_fkey"
+            columns: ["pin_id"]
+            isOneToOne: false
+            referencedRelation: "pins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pins: {
         Row: {
           author: string | null

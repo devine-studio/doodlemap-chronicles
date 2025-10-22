@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Map, Marker } from "pigeon-maps";
 import { Plus, Minus } from "lucide-react";
+import { PinLikeButton } from "@/components/PinLikeButton";
+import { PinComments } from "@/components/PinComments";
 
 interface Pin {
   id: string;
@@ -10,6 +12,8 @@ interface Pin {
   image_url?: string;
   created_at: string;
   author?: string;
+  like_count?: number;
+  comment_count?: number;
 }
 
 interface WorldMapProps {
@@ -174,6 +178,17 @@ export const WorldMap = ({
                 </svg>
                 {selectedPin.lat.toFixed(4)}, {selectedPin.lng.toFixed(4)}
               </span>
+            </div>
+
+            <div className="flex items-center gap-4 mt-3 pt-2 border-t border-gray-200">
+              <PinLikeButton
+                pinId={selectedPin.id}
+                initialLikeCount={selectedPin.like_count || 0}
+              />
+              <PinComments
+                pinId={selectedPin.id}
+                initialCommentCount={selectedPin.comment_count || 0}
+              />
             </div>
           </div>
         </div>

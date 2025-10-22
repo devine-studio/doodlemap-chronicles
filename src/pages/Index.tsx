@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { WorldMap } from "@/components/WorldMap";
 import { PinCard } from "@/components/PinCard";
 import { CreatePinDialog } from "@/components/CreatePinDialog";
+import { PinLikeButton } from "@/components/PinLikeButton";
+import { PinComments } from "@/components/PinComments";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus, Navigation } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +19,8 @@ interface Pin {
   image_url?: string;
   created_at: string;
   author?: string;
+  like_count?: number;
+  comment_count?: number;
 }
 
 const PINS_PER_PAGE = 20;
@@ -28,12 +32,12 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("map");
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Infinite query for pins
+  // Infinite query for pins with likes and comments counts
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
       queryKey: ["pins"],
       queryFn: async ({ pageParam = 0 }) => {
-        const { data, error } = await supabase
+        const { data: pinsData, error } = await supabase
           .from("pins")
           .select("*")
           .order("created_at", { ascending: false })
@@ -43,7 +47,24 @@ const Index = () => {
           );
 
         if (error) throw error;
-        return data || [];
+
+        // Fetch like and comment counts for each pin
+        const pinsWithCounts = await Promise.all(
+          (pinsData || []).map(async (pin) => {
+            const [{ count: likeCount }, { count: commentCount }] = await Promise.all([
+              supabase.from("likes").select("*", { count: "exact", head: true }).eq("pin_id", pin.id),
+              supabase.from("comments").select("*", { count: "exact", head: true }).eq("pin_id", pin.id),
+            ]);
+
+            return {
+              ...pin,
+              like_count: likeCount || 0,
+              comment_count: commentCount || 0,
+            };
+          })
+        );
+
+        return pinsWithCounts;
       },
       getNextPageParam: (lastPage, allPages) => {
         return lastPage.length === PINS_PER_PAGE ? allPages.length : undefined;
@@ -371,6 +392,16 @@ const Index = () => {
                                 {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
                               </span>
                             </div>
+                            <div className="flex items-center gap-4 mt-2">
+                              <PinLikeButton
+                                pinId={pin.id}
+                                initialLikeCount={pin.like_count || 0}
+                              />
+                              <PinComments
+                                pinId={pin.id}
+                                initialCommentCount={pin.comment_count || 0}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -510,14 +541,24 @@ const Index = () => {
                               >
                                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
                               </svg>
-                              {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
-                            </span>
+                                  {pin.lat.toFixed(4)}, {pin.lng.toFixed(4)}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 mt-2">
+                                <PinLikeButton
+                                  pinId={pin.id}
+                                  initialLikeCount={pin.like_count || 0}
+                                />
+                                <PinComments
+                                  pinId={pin.id}
+                                  initialCommentCount={pin.comment_count || 0}
+                                />
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                  {pins.length === 0 && !isLoading && (
+                      ))}
+                      {pins.length === 0 && !isLoading && (
                     <div className="text-sm text-gray-600 text-center py-8 font-medium">
                       No pins yet
                     </div>
