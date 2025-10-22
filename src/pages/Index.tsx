@@ -280,7 +280,7 @@ const Index = () => {
                 </div>
               </div>
               <div className="flex gap-2 items-center">
-                <ThemeToggle />
+                {/* <ThemeToggle /> */}
                 <Button
                   variant="default"
                   size="default"
@@ -312,7 +312,9 @@ const Index = () => {
             <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
               <div className="bg-card rounded-3xl shadow-md border border-border p-5 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-3 hidden md:block">
-                  <h2 className="text-lg font-semibold text-foreground">Mapa</h2>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Mapa
+                  </h2>
                 </div>
 
                 {isLoading ? (
@@ -506,7 +508,7 @@ const Index = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <ThemeToggle />
+                    {/* <ThemeToggle /> */}
                     <Button
                       variant="ghost"
                       size="sm"
