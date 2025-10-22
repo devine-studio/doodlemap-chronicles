@@ -4,6 +4,7 @@ import { PinCard } from "@/components/PinCard";
 import { CreatePinDialog } from "@/components/CreatePinDialog";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import {
   MapPin,
@@ -253,13 +254,13 @@ const Index = () => {
 
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col relative">
-      {/* Subtle gray background */}
-      <div className="fixed inset-0 bg-blue-100 pointer-events-none"></div>
+      {/* Subtle background */}
+      <div className="fixed inset-0 bg-background pointer-events-none"></div>
 
       <div className="relative z-10 flex flex-col h-full max-w-[1600px] mx-auto w-full p-4 gap-4">
         {/* Header */}
         <header className="fade-in md:hidden">
-          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-5">
+          <div className="bg-card rounded-3xl shadow-lg border border-border p-5">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
                 <div className="">
@@ -270,15 +271,16 @@ const Index = () => {
                   />
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold bg-blue-500 bg-clip-text text-transparent">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     map.in
                   </h1>
-                  <p className="text-sm text-gray-700 font-medium">
+                  <p className="text-sm text-muted-foreground font-medium">
                     Qualquer um pode compartilhar.
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 ">
+              <div className="flex gap-2 items-center">
+                <ThemeToggle />
                 <Button
                   variant="default"
                   size="default"
@@ -300,7 +302,7 @@ const Index = () => {
             onValueChange={setActiveTab}
             className="h-full flex flex-col"
           >
-            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-1 mb-2">
+            <div className="bg-card rounded-2xl shadow-md border border-border p-1 mb-2">
               <TabsList className="grid w-full grid-cols-2 bg-transparent border-none w-full">
                 <TabsTrigger value="map">Mapa</TabsTrigger>
                 <TabsTrigger value="pins">Pins Recentes</TabsTrigger>
@@ -308,20 +310,20 @@ const Index = () => {
             </div>
 
             <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
-              <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 h-full flex flex-col">
+              <div className="bg-card rounded-3xl shadow-md border border-border p-5 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-3 hidden md:block">
-                  <h2 className="text-lg font-semibold text-gray-800 ">Mapa</h2>
+                  <h2 className="text-lg font-semibold text-foreground">Mapa</h2>
                 </div>
 
                 {isLoading ? (
-                  <div className="w-full flex-1 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <p className="text-sm text-gray-700 font-medium">
+                  <div className="w-full flex-1 bg-muted/50 rounded-2xl border border-border flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-sm text-foreground font-medium">
                       Loading map...
                     </p>
                   </div>
                 ) : (
-                  <div className="flex-1 overflow-hidden rounded-2xl border border-gray-200">
+                  <div className="flex-1 overflow-hidden rounded-2xl border border-border">
                     <WorldMap
                       pins={pins.map((pin) => ({
                         ...pin,
@@ -335,8 +337,8 @@ const Index = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-200">
-                  <span className="text-xs text-gray-600 font-medium">
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
+                  <span className="text-xs text-muted-foreground font-medium">
                     Click to add a pin
                   </span>
                   <Button
@@ -353,12 +355,12 @@ const Index = () => {
             </TabsContent>
 
             <TabsContent value="pins" className="flex-1 mt-0 overflow-hidden">
-              <div className="bg-white rounded-3xl shadow-md border border-gray-100 p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 hidden md:block">
-                  <h2 className="text-lg font-semibold text-gray-800">
+              <div className="bg-card rounded-3xl shadow-md border border-border p-5 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-3 pb-2 border-b border-border hidden md:block">
+                  <h2 className="text-lg font-semibold text-foreground">
                     Pins Recentes
                   </h2>
-                  {/* <span className="text-xs text-gray-600 font-medium">
+                  {/* <span className="text-xs text-muted-foreground font-medium">
                     {pins.length} total
                   </span> */}
                 </div>
@@ -372,27 +374,27 @@ const Index = () => {
                           pins.length === index + 1 ? lastPinElementRef : null
                         }
                         onClick={() => handlePinClick(pin.id)}
-                        className="pin-card p-3 cursor-pointer bg-white"
+                        className="pin-card p-3 cursor-pointer"
                       >
                         <div className="flex gap-3">
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center text-white font-semibold shadow-md">
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold shadow-md">
                             {(pin.author || "A")[0].toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-gray-800 text-sm">
+                              <span className="font-semibold text-foreground text-sm">
                                 {pin.author || "Anonymous"}
                               </span>
-                              <span className="text-xs text-gray-600">
+                              <span className="text-xs text-muted-foreground">
                                 ·{" "}
                                 {new Date(pin.created_at).toLocaleDateString()}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">
+                            <p className="text-sm text-foreground break-words whitespace-pre-wrap mb-2">
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="text-xs text-blue-600 hover:text-blue-700 truncate flex items-center gap-1">
+                              <div className="text-xs text-primary hover:text-accent truncate flex items-center gap-1">
                                 <svg
                                   className="inline-block w-3 h-3 flex-shrink-0"
                                   fill="none"
@@ -407,7 +409,7 @@ const Index = () => {
                                 </span>
                               </div>
                             )}
-                            <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <svg
                                   className="inline-block w-3 h-3"
@@ -431,7 +433,7 @@ const Index = () => {
                                     e.stopPropagation();
                                     toggleComments(pin.id);
                                   }}
-                                  className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
                                 >
                                   <svg
                                     className="w-4 h-4"
@@ -462,12 +464,12 @@ const Index = () => {
                       </div>
                     ))}
                     {pins.length === 0 && !isLoading && (
-                      <div className="text-sm text-gray-600 text-center py-8 font-medium">
+                      <div className="text-sm text-muted-foreground text-center py-8 font-medium">
                         No pins yet
                       </div>
                     )}
                     {isFetchingNextPage && (
-                      <div className="text-sm text-gray-600 text-center py-4 font-medium">
+                      <div className="text-sm text-muted-foreground text-center py-4 font-medium">
                         Loading more...
                       </div>
                     )}
@@ -482,7 +484,7 @@ const Index = () => {
         <div className="hidden lg:flex flex-1 gap-4 overflow-hidden fade-in">
           {/* Map - Left 1/3 */}
           <div className="w-1/3 flex-1 flex-col overflow-hidden">
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
+            <div className="bg-card rounded-3xl shadow-lg border border-border p-6 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3 justify-between w-full">
                   <div className="flex items-center gap-3">
@@ -494,45 +496,43 @@ const Index = () => {
                       />
                     </div>
                     <div>
-                      <h1 className="text-3xl font-bold bg-black/70 font-sans font-bold bg-clip-text text-transparent">
+                      <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                         mapin
                       </h1>
-                      <p className="text-sm text-gray-700 font-medium">
+                      <p className="text-sm text-muted-foreground font-medium">
                         Qualquer um pode compartilhar.
                       </p>
                     </div>
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowPins(!showPins)}
-                    className="gap-1"
-                  >
-                    {showPins ? (
-                      <ArrowBigRightDashIcon className="w-4 h-4" />
-                    ) : (
-                      <ArrowBigLeftDashIcon className="w-4 h-4" />
-                    )}
-                    {!showPins ? <span>Ver Pins</span> : null}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <ThemeToggle />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPins(!showPins)}
+                      className="gap-1"
+                    >
+                      {showPins ? (
+                        <ArrowBigRightDashIcon className="w-4 h-4" />
+                      ) : (
+                        <ArrowBigLeftDashIcon className="w-4 h-4" />
+                      )}
+                      {!showPins ? <span>Ver Pins</span> : null}
+                    </Button>
+                  </div>
                 </div>
-                {/* <h2 className="text-xl font-semibold text-gray-800">Mapa</h2>
-                <span className="text-xs text-gray-600 font-medium">
-                  {selectedLocation.lat.toFixed(4)},{" "}
-                  {selectedLocation.lng.toFixed(4)}
-                </span> */}
               </div>
 
               {isLoading ? (
-                <div className="w-full flex-1 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col items-center justify-center">
-                  <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                  <p className="text-sm text-gray-700 font-medium">
+                <div className="w-full flex-1 bg-muted/50 rounded-2xl border border-border flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+                  <p className="text-sm text-foreground font-medium">
                     Loading map...
                   </p>
                 </div>
               ) : (
-                <div className="flex-1 overflow-hidden rounded-2xl border border-gray-200">
+                <div className="flex-1 overflow-hidden rounded-2xl border border-border">
                   <WorldMap
                     pins={pins.map((pin) => ({
                       ...pin,
@@ -546,8 +546,8 @@ const Index = () => {
                 </div>
               )}
 
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-                <span className="text-xs text-gray-600 font-medium">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                <span className="text-xs text-muted-foreground font-medium">
                   Clique no mapa para adicionar um novo pin
                 </span>
                 <Button
@@ -566,12 +566,12 @@ const Index = () => {
           {/* Recent Pins - Right 2/3 */}
           {showPins && (
             <div className="w-2/3 flex flex-col overflow-hidden">
-              <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
-                  <h2 className="text-xl font-semibold text-gray-800">
+              <div className="bg-card rounded-3xl shadow-lg border border-border p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
+                  <h2 className="text-xl font-semibold text-foreground">
                     Pins Recentes
                   </h2>
-                  {/* <span className="text-sm text-gray-600 font-medium">
+                  {/* <span className="text-sm text-muted-foreground font-medium">
                   {pins.length} total
                 </span> */}
                 </div>
@@ -586,18 +586,18 @@ const Index = () => {
                         onClick={() => {
                           handlePinClick(pin.id);
                         }}
-                        className="pin-card p-4 cursor-pointer bg-white"
+                        className="pin-card p-4 cursor-pointer"
                       >
                         <div className="flex gap-3">
-                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
+                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold text-lg shadow-lg">
                             {(pin.author || "A")[0].toUpperCase()}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1.5">
-                              <span className="font-semibold text-gray-800">
+                              <span className="font-semibold text-foreground">
                                 {pin.author || "Anonymous"}
                               </span>
-                              <span className="text-xs text-gray-600">
+                              <span className="text-xs text-muted-foreground">
                                 ·{" "}
                                 {new Date(pin.created_at).toLocaleDateString()}{" "}
                                 at{" "}
@@ -610,11 +610,11 @@ const Index = () => {
                                 )}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-700 break-words whitespace-pre-wrap mb-2">
+                            <p className="text-sm text-foreground break-words whitespace-pre-wrap mb-2">
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="text-xs text-blue-600 hover:text-blue-700 truncate flex items-center gap-1">
+                              <div className="text-xs text-primary hover:text-accent truncate flex items-center gap-1">
                                 <svg
                                   className="inline-block w-3 h-3 flex-shrink-0"
                                   fill="none"
@@ -629,7 +629,7 @@ const Index = () => {
                                 </span>
                               </div>
                             )}
-                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-600">
+                            <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <svg
                                   className="inline-block w-3 h-3"
@@ -653,7 +653,7 @@ const Index = () => {
                                     e.stopPropagation();
                                     toggleComments(pin.id);
                                   }}
-                                  className="flex items-center gap-1.5 text-xs text-gray-600 hover:text-blue-600 transition-colors"
+                                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
                                 >
                                   <svg
                                     className="w-4 h-4"
@@ -684,12 +684,12 @@ const Index = () => {
                       </div>
                     ))}
                     {pins.length === 0 && !isLoading && (
-                      <div className="text-sm text-gray-600 text-center py-8 font-medium">
+                      <div className="text-sm text-muted-foreground text-center py-8 font-medium">
                         No pins yet
                       </div>
                     )}
                     {isFetchingNextPage && (
-                      <div className="text-sm text-gray-600 text-center py-4 font-medium">
+                      <div className="text-sm text-muted-foreground text-center py-4 font-medium">
                         Loading more...
                       </div>
                     )}

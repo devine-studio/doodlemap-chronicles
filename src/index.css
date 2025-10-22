@@ -8,7 +8,7 @@
 
 @layer base {
   :root {
-    /* Apple-style palette */
+    /* Apple-style light palette */
     --background: 220 40% 98%;
     --foreground: 220 20% 10%;
 
@@ -44,6 +44,42 @@
 
     --radius: 1rem;
   }
+
+  .dark {
+    /* Apple-style dark palette */
+    --background: 220 15% 10%;
+    --foreground: 220 10% 95%;
+
+    --card: 220 15% 12%;
+    --card-foreground: 220 10% 95%;
+
+    --popover: 220 15% 12%;
+    --popover-foreground: 220 10% 95%;
+
+    /* Primary - Apple blue for dark mode */
+    --primary: 211 100% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - dark gray */
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 220 10% 90%;
+
+    /* Accent - bright blue */
+    --accent: 211 100% 60%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Muted - darker gray */
+    --muted: 220 15% 20%;
+    --muted-foreground: 220 10% 60%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders - dark gray */
+    --border: 220 15% 25%;
+    --input: 220 15% 30%;
+    --ring: 211 100% 55%;
+  }
 }
 
 @layer base {
@@ -71,8 +107,7 @@
 
   /* Apple-style card */
   .glass-card {
-    background: white;
-    border: 1px solid rgba(229, 231, 235, 1);
+    @apply bg-card border border-border;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     border-radius: var(--radius);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -86,8 +121,7 @@
 
   /* Pin card styling */
   .pin-card {
-    background: white;
-    border: 1px solid rgba(229, 231, 235, 1);
+    @apply bg-card border border-border;
     border-left: 3px solid hsl(var(--primary));
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
