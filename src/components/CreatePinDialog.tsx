@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Camera, Upload, X, Loader2 } from "lucide-react";
+import { Camera, Upload, X, Loader2, Link } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -38,6 +38,8 @@ export const CreatePinDialog = ({
   const [author, setAuthor] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [linkUrl, setLinkUrl] = useState("");
+  const [showLinkInput, setShowLinkInput] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -67,6 +69,8 @@ export const CreatePinDialog = ({
   const removeImage = () => {
     setImageFile(null);
     setImagePreview(null);
+    setLinkUrl("");
+    setShowLinkInput(false);
     if (fileInputRef.current) fileInputRef.current.value = "";
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
@@ -108,6 +112,8 @@ export const CreatePinDialog = ({
         if (uploadedUrl) {
           imageUrl = uploadedUrl;
         }
+      } else if (linkUrl.trim()) {
+        imageUrl = linkUrl.trim();
       }
 
       onSubmit({
@@ -123,6 +129,8 @@ export const CreatePinDialog = ({
       setAuthor("");
       setImageFile(null);
       setImagePreview(null);
+      setLinkUrl("");
+      setShowLinkInput(false);
       onOpenChange(false);
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -186,10 +194,10 @@ export const CreatePinDialog = ({
             />
           </div>
 
-          {/* Image Upload Section */}
+          {/* Image Upload / Link Section */}
           <div className="space-y-2">
             <Label className="text-sm font-medium text-[var(--foreground)]">
-              Adicionar foto (opcional)
+              Adicionar foto ou link (opcional)
             </Label>
 
             {imagePreview ? (
@@ -207,43 +215,88 @@ export const CreatePinDialog = ({
                   <X className="w-4 h-4" />
                 </button>
               </div>
+            ) : showLinkInput || linkUrl ? (
+              <div className="space-y-2">
+                <div className="relative">
+                  <Input
+                    type="url"
+                    placeholder="Cole um link (Spotify, YouTube, etc.)"
+                    value={linkUrl}
+                    onChange={(e) => setLinkUrl(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-[var(--accent)]/10 rounded-full text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Ou{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLinkInput(false);
+                      setLinkUrl("");
+                    }}
+                    className="text-[var(--accent)] hover:underline"
+                  >
+                    envie uma foto
+                  </button>
+                </p>
+              </div>
             ) : (
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-                <input
-                  ref={cameraInputRef}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  Upload
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="flex-1 gap-2"
-                >
-                  <Camera className="w-4 h-4" />
-                  Câmera
-                </Button>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex-1 gap-2"
+                  >
+                    <Upload className="w-4 h-4" />
+                    Upload
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="flex-1 gap-2"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Câmera
+                  </Button>
+                </div>
+                <p className="text-xs text-[var(--muted-foreground)]">
+                  Ou{" "}
+                  <button
+                    type="button"
+                    onClick={() => setShowLinkInput(true)}
+                    className="text-[var(--accent)] hover:underline inline-flex items-center gap-1"
+                  >
+                    <Link className="w-3 h-3" />
+                    cole um link
+                  </button>
+                </p>
               </div>
             )}
           </div>

@@ -5,6 +5,28 @@ import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { supabase } from "@/integrations/supabase/client";
+import { ExternalLink } from "lucide-react";
+
+// Helper function to detect URL type
+const getUrlType = (url: string): "image" | "spotify" | "link" => {
+  const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i;
+  const imageHosts = /\.(supabase\.co|cloudinary|imgur|unsplash)/i;
+
+  if (imageExtensions.test(url) || imageHosts.test(url)) {
+    return "image";
+  }
+  if (url.includes("spotify.com") || url.includes("open.spotify")) {
+    return "spotify";
+  }
+  return "link";
+};
+
+// Spotify icon component
+const SpotifyIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+  </svg>
+);
 
 interface Pin {
   id: string;
@@ -322,19 +344,63 @@ export const WorldMap = ({
                 {selectedPin.text}
               </p>
 
-              {selectedPin.image_url && (
-                <div
-                  className="rounded-xl overflow-hidden border border-[var(--border)] cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setLightboxOpen(true)}
-                >
-                  <img
-                    src={selectedPin.image_url}
-                    alt="Pin image"
-                    className="w-full h-40 object-cover"
-                    loading="lazy"
-                  />
-                </div>
-              )}
+              {selectedPin.image_url &&
+                (() => {
+                  const urlType = getUrlType(selectedPin.image_url);
+
+                  if (urlType === "image") {
+                    return (
+                      <div
+                        className="rounded-xl overflow-hidden border border-[var(--border)] cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setLightboxOpen(true)}
+                      >
+                        <img
+                          src={selectedPin.image_url}
+                          alt="Pin image"
+                          className="w-full h-40 object-cover"
+                          loading="lazy"
+                        />
+                      </div>
+                    );
+                  }
+
+                  if (urlType === "spotify") {
+                    return (
+                      <a
+                        href={selectedPin.image_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[#1DB954]/10 hover:bg-[#1DB954]/20 transition-colors"
+                      >
+                        <SpotifyIcon className="w-8 h-8 text-[#1DB954] flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[var(--foreground)] truncate">
+                            Spotify Link
+                          </p>
+                          <p className="text-xs text-[var(--muted-foreground)] truncate">
+                            {selectedPin.image_url}
+                          </p>
+                        </div>
+                        <ExternalLink className="w-4 h-4 text-[var(--muted-foreground)] flex-shrink-0" />
+                      </a>
+                    );
+                  }
+
+                  // Generic link
+                  return (
+                    <a
+                      href={selectedPin.image_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-3 p-3 rounded-xl border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors"
+                    >
+                      <ExternalLink className="w-6 h-6 text-[var(--accent)] flex-shrink-0" />
+                      <p className="text-sm text-[var(--accent)] truncate flex-1">
+                        {selectedPin.image_url}
+                      </p>
+                    </a>
+                  );
+                })()}
 
               <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
                 <svg
@@ -379,14 +445,15 @@ export const WorldMap = ({
       )}
 
       {/* Image Lightbox */}
-      {selectedPin?.image_url && (
-        <ImageLightbox
-          imageUrl={selectedPin.image_url}
-          alt="Pin image"
-          isOpen={lightboxOpen}
-          onClose={() => setLightboxOpen(false)}
-        />
-      )}
+      {selectedPin?.image_url &&
+        getUrlType(selectedPin.image_url) === "image" && (
+          <ImageLightbox
+            imageUrl={selectedPin.image_url}
+            alt="Pin image"
+            isOpen={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
+        )}
     </div>
   );
 };
