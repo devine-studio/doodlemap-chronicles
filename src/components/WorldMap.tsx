@@ -289,7 +289,7 @@ export const WorldMap = ({
       {/* Popup Card */}
       {selectedPin && (
         <div className="absolute bottom-3 md:bottom-6 left-1/2 -translate-x-1/2 z-[1000] w-[92%] md:w-[85%] max-w-sm animate-in slide-in-from-bottom-4 fade-in duration-200">
-          <div className="bg-[var(--background)] rounded-2xl shadow-[var(--shadow-neu-raised)] overflow-hidden">
+          <div className="bg-white overflow-hidden">
             {/* Header */}
             <div className="relative px-4 py-3">
               <button
