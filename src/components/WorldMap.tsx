@@ -60,10 +60,9 @@ export const WorldMap = ({
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: "mapbox://styles/mapbox/streets-v12",
       center: [0, 20],
       zoom: 2,
-      projection: "mercator",
     });
 
     map.current.on("load", () => {
@@ -73,7 +72,6 @@ export const WorldMap = ({
     map.current.on("click", (e) => {
       onMapClick(e.lngLat.lat, e.lngLat.lng);
     });
-
     return () => {
       map.current?.remove();
     };
@@ -103,23 +101,15 @@ export const WorldMap = ({
         // Create new marker
         const el = document.createElement("div");
         el.className = "mapbox-marker";
-        el.style.width = "24px";
-        el.style.height = "24px";
+        el.style.width = "28px";
+        el.style.height = "28px";
         el.style.borderRadius = "50%";
         el.style.backgroundColor = selectedPinId === pin.id ? "#0078d4" : "#ff4444";
         el.style.border = "3px solid white";
-        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+        el.style.boxShadow = "0 3px 12px rgba(0,0,0,0.35)";
         el.style.cursor = "pointer";
-        el.style.transition = "transform 0.2s, background-color 0.2s";
 
-        el.addEventListener("mouseenter", () => {
-          el.style.transform = "scale(1.2)";
-        });
-        el.addEventListener("mouseleave", () => {
-          el.style.transform = "scale(1)";
-        });
-
-        const marker = new mapboxgl.Marker({ element: el })
+        const marker = new mapboxgl.Marker({ element: el, anchor: "center" })
           .setLngLat([pin.lng, pin.lat])
           .addTo(map.current!);
 
