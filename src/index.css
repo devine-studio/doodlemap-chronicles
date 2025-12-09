@@ -240,6 +240,13 @@ select:-webkit-autofill:focus {
     box-shadow: var(--shadow-neu-pressed);
   }
 
+  .neu-pressed:focus,
+  .neu-pressed:focus-visible,
+  .neu-pressed:focus-within {
+    box-shadow: var(--shadow-neu-pressed);
+    outline: none;
+  }
+
   .neu-flat {
     box-shadow: var(--shadow-neu-flat);
   }
