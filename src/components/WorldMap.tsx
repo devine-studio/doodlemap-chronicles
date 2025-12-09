@@ -5,7 +5,13 @@ import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { supabase } from "@/integrations/supabase/client";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, MapPin } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 // Helper function to detect URL type
 const getUrlType = (url: string): "image" | "spotify" | "link" => {
@@ -402,29 +408,75 @@ export const WorldMap = ({
                   );
                 })()}
 
-              <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
-                <svg
-                  className="w-3.5 h-3.5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors cursor-pointer">
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    <span className="underline decoration-dotted underline-offset-2">
+                      {selectedPin.lat.toFixed(4)}, {selectedPin.lng.toFixed(4)}
+                    </span>
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  className="min-w-[160px] bg-white border border-gray-200 shadow-lg"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                <span>
-                  {selectedPin.lat.toFixed(4)}, {selectedPin.lng.toFixed(4)}
-                </span>
-              </div>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      window.open(
+                        `https://www.google.com/maps?q=${selectedPin.lat},${selectedPin.lng}`,
+                        "_blank"
+                      )
+                    }
+                    className="cursor-pointer"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+                    </svg>
+                    Open in Google Maps
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      window.open(
+                        `https://maps.apple.com/?q=${selectedPin.lat},${selectedPin.lng}`,
+                        "_blank"
+                      )
+                    }
+                    className="cursor-pointer"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z" />
+                    </svg>
+                    Open in Apple Maps
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Footer */}
