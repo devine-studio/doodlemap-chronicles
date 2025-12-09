@@ -56,12 +56,12 @@ export const CreatePinDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-gray-800">
+          <DialogTitle className="text-lg font-semibold text-[var(--foreground)]">
             Criar um novo pin
           </DialogTitle>
-          <div className="text-xs text-gray-600 mt-1 font-medium">
+          <div className="text-xs text-[var(--muted-foreground)] mt-1 font-medium">
             <svg
               className="inline-block w-3 h-3 mr-1"
               fill="currentColor"
@@ -77,7 +77,7 @@ export const CreatePinDialog = ({
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="text"
-                className="text-sm font-medium text-gray-700"
+                className="text-sm font-medium text-[var(--foreground)]"
               >
                 O que está acontecendo?
               </Label>
@@ -87,7 +87,7 @@ export const CreatePinDialog = ({
                     ? "text-red-600"
                     : text.length > 120
                     ? "text-orange-500"
-                    : "text-gray-500"
+                    : "text-[var(--muted-foreground)]"
                 }`}
               >
                 {text.length}/140
@@ -111,7 +111,7 @@ export const CreatePinDialog = ({
           <div className="space-y-2">
             <Label
               htmlFor="author"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium text-[var(--foreground)]"
             >
               Seu nome (opcional)
             </Label>
@@ -126,7 +126,7 @@ export const CreatePinDialog = ({
           <div className="space-y-2">
             <Label
               htmlFor="imageUrl"
-              className="text-sm font-medium text-gray-700"
+              className="text-sm font-medium text-[var(--foreground)]"
             >
               Link (opcional)
             </Label>
@@ -139,7 +139,7 @@ export const CreatePinDialog = ({
             />
           </div>
 
-          <div className="flex gap-2 justify-end pt-2">
+          <div className="flex gap-3 justify-end pt-4">
             <Button
               type="button"
               variant="outline"
@@ -147,9 +147,7 @@ export const CreatePinDialog = ({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={!text.trim()}>
-              Post Pin
-            </Button>
+            <Button type="submit">Publicar Pin</Button>
           </div>
         </form>
       </DialogContent>

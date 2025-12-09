@@ -1,4 +1,10 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  TouchEvent as ReactTouchEvent,
+} from "react";
 import { WorldMap } from "@/components/WorldMap";
 import { PinCard } from "@/components/PinCard";
 import { CreatePinDialog } from "@/components/CreatePinDialog";
@@ -6,6 +12,8 @@ import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { NeuCard } from "@/components/ui/NeuCard";
+import { NeuCardReversed } from "@/components/ui/NeuCardReversed";
 import {
   MapPin,
   Plus,
@@ -31,7 +39,7 @@ interface Pin {
   comment_count?: number;
 }
 
-const PINS_PER_PAGE = 20;
+const PINS_PER_PAGE = 100;
 
 const Index = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -43,6 +51,7 @@ const Index = () => {
   );
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [showPins, setShowPins] = useState(false);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
 
   // Infinite query for pins with likes and comments counts
   const {
@@ -257,75 +266,51 @@ const Index = () => {
       {/* Subtle background */}
       <div className="fixed inset-0 bg-background pointer-events-none"></div>
 
-      <div className="relative z-10 flex flex-col h-full max-w-[1600px] mx-auto w-full p-4 gap-4">
-        {/* Header */}
-        <header className="fade-in md:hidden">
-          <div className="bg-card rounded-3xl shadow-lg border border-border p-5">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3">
-                <div className="">
-                  <img
-                    src="/win7world.png"
-                    alt="logo"
-                    className="w-14 h-14 drop-shadow-lg"
-                  />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                    map.in
-                  </h1>
-                  <p className="text-sm text-muted-foreground font-medium">
-                    Qualquer um pode compartilhar.
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2 items-center">
-                {/* <ThemeToggle /> */}
-                <Button
-                  variant="default"
-                  size="default"
-                  onClick={handleUseMyLocation}
-                  className="gap-2 hidden md:flex "
-                >
-                  <Navigation className="w-4 h-4" />
-                  <span className="hidden sm:inline">Novo Pin</span>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Mobile Tabs */}
-        <div className="lg:hidden flex-1 overflow-hidden fade-in">
+      <div className="relative z-10 flex flex-col h-full w-full">
+        {/* Mobile Layout - Full screen map */}
+        <div className="lg:hidden flex-1 flex flex-col h-full">
           <Tabs
             value={activeTab}
             onValueChange={setActiveTab}
             className="h-full flex flex-col"
           >
-            <div className="bg-card rounded-2xl shadow-md border border-border p-1 mb-2">
-              <TabsList className="grid w-full grid-cols-2 bg-transparent border-none w-full">
-                <TabsTrigger value="map">Mapa</TabsTrigger>
-                <TabsTrigger value="pins">Pins Recentes</TabsTrigger>
-              </TabsList>
+            {/* Floating tab switcher */}
+            <div className="absolute top-4 left-4 right-4 z-20">
+              <div className="bg-white/80 rounded-2xl p-1">
+                <TabsList className="grid w-full grid-cols-2 bg-transparent border-none gap-2">
+                  <TabsTrigger
+                    value="map"
+                    className="neu-button rounded-xl data-[state=active]:neu-pressed"
+                  >
+                    Mapa
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="pins"
+                    className="neu-button rounded-xl data-[state=active]:neu-pressed"
+                  >
+                    Pins Recentes
+                  </TabsTrigger>
+                </TabsList>
+              </div>
             </div>
 
-            <TabsContent value="map" className="flex-1 mt-0 overflow-hidden">
-              <div className="bg-card rounded-3xl shadow-md border border-border p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3 hidden md:block">
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Mapa
-                  </h2>
-                </div>
-
+            <TabsContent
+              value="map"
+              className="flex-1 mt-0 h-full"
+              forceMount
+              style={{ display: activeTab === "map" ? "block" : "none" }}
+            >
+              {/* Map takes full screen with neu-card styling */}
+              <div className="h-full relative">
                 {isLoading ? (
-                  <div className="w-full flex-1 bg-muted/50 rounded-2xl border border-border flex flex-col items-center justify-center">
-                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
-                    <p className="text-sm text-foreground font-medium">
+                  <div className="w-full h-full neu-raised flex flex-col items-center justify-center">
+                    <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-3"></div>
+                    <p className="text-sm text-[var(--foreground)] font-medium">
                       Loading map...
                     </p>
                   </div>
                 ) : (
-                  <div className="flex-1 overflow-hidden rounded-2xl border border-border">
+                  <div className="h-full neu-raised rounded-none overflow-hidden">
                     <WorldMap
                       pins={pins.map((pin) => ({
                         ...pin,
@@ -339,34 +324,25 @@ const Index = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-                  <span className="text-xs text-muted-foreground font-medium">
-                    Click to add a pin
-                  </span>
+                {/* Floating action button for location */}
+                <div className="absolute bottom-6 right-4 z-20">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleUseMyLocation}
-                    className="gap-1"
+                    className="neu-card rounded-full p-3 h-auto"
                   >
-                    <Navigation className="w-4 h-4" />
-                    <span>My Location</span>
+                    <Navigation className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
             </TabsContent>
 
-            <TabsContent value="pins" className="flex-1 mt-0 overflow-hidden">
-              <div className="bg-card rounded-3xl shadow-md border border-border p-5 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-3 pb-2 border-b border-border hidden md:block">
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Pins Recentes
-                  </h2>
-                  {/* <span className="text-xs text-muted-foreground font-medium">
-                    {pins.length} total
-                  </span> */}
-                </div>
-
+            <TabsContent
+              value="pins"
+              className="flex-1 mt-0 overflow-hidden p-4 pt-20"
+            >
+              <NeuCard className="p-4 h-full flex flex-col">
                 <div className="flex-1 overflow-hidden rounded-2xl">
                   <div className="space-y-2 overflow-y-auto scrollbar-apple h-full">
                     {pins.map((pin, index) => (
@@ -376,7 +352,38 @@ const Index = () => {
                           pins.length === index + 1 ? lastPinElementRef : null
                         }
                         onClick={() => handlePinClick(pin.id)}
-                        className="pin-card p-3 cursor-pointer"
+                        onTouchStart={(e) => {
+                          const touch = e.touches[0];
+                          touchStartRef.current = {
+                            x: touch.clientX,
+                            y: touch.clientY,
+                          };
+                        }}
+                        onTouchEnd={(e) => {
+                          // Ignore if clicking on a button
+                          const target = e.target as HTMLElement;
+                          if (target.closest("button")) return;
+
+                          // Check if this was a tap (not a scroll)
+                          if (touchStartRef.current) {
+                            const touch = e.changedTouches[0];
+                            const dx = Math.abs(
+                              touch.clientX - touchStartRef.current.x
+                            );
+                            const dy = Math.abs(
+                              touch.clientY - touchStartRef.current.y
+                            );
+                            // If movement is less than 10px, treat as tap
+                            if (dx < 10 && dy < 10) {
+                              e.preventDefault();
+                              handlePinClick(pin.id);
+                            }
+                          }
+                          touchStartRef.current = null;
+                        }}
+                        className="pin-card p-3 cursor-pointer active:bg-muted/50"
+                        role="button"
+                        tabIndex={0}
                       >
                         <div className="flex gap-3">
                           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold shadow-md">
@@ -471,114 +478,95 @@ const Index = () => {
                       </div>
                     )}
                     {isFetchingNextPage && (
-                      <div className="text-sm text-muted-foreground text-center py-4 font-medium">
+                      <div className="text-sm text-[var(--muted-foreground)] text-center py-4 font-medium">
                         Loading more...
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
+              </NeuCard>
             </TabsContent>
           </Tabs>
         </div>
 
-        {/* Desktop Layout */}
-        <div className="hidden lg:flex flex-1 gap-4 overflow-hidden fade-in">
-          {/* Map - Left 1/3 */}
-          <div className="w-1/3 flex-1 flex-col overflow-hidden">
-            <div className="bg-card rounded-3xl shadow-lg border border-border p-6 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3 justify-between w-full">
-                  <div className="flex items-center gap-3">
-                    <div className="">
-                      <img
-                        src="/win7world.png"
-                        alt="logo"
-                        className="w-14 h-14 drop-shadow-lg"
-                      />
-                    </div>
-                    <div>
-                      <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                        mapin
-                      </h1>
-                      <p className="text-sm text-muted-foreground font-medium">
-                        Qualquer um pode compartilhar.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {/* <ThemeToggle /> */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowPins(!showPins)}
-                      className="gap-1"
-                    >
-                      {showPins ? (
-                        <ArrowBigRightDashIcon className="w-4 h-4" />
-                      ) : (
-                        <ArrowBigLeftDashIcon className="w-4 h-4" />
-                      )}
-                      {!showPins ? <span>Ver Pins</span> : null}
-                    </Button>
-                  </div>
-                </div>
+        {/* Desktop Layout - Similar to mobile with floating buttons */}
+        <div className="hidden lg:flex flex-1 h-full relative">
+          {/* Full screen map */}
+          <div className="h-full w-full relative">
+            {isLoading ? (
+              <div className="w-full h-full flex flex-col items-center justify-center">
+                <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-3"></div>
+                <p className="text-sm text-[var(--foreground)] font-medium">
+                  Loading map...
+                </p>
               </div>
-
-              {isLoading ? (
-                <div className="w-full flex-1 bg-muted/50 rounded-2xl border border-border flex flex-col items-center justify-center">
-                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
-                  <p className="text-sm text-foreground font-medium">
-                    Loading map...
-                  </p>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-hidden rounded-2xl border border-border">
-                  <WorldMap
-                    pins={pins.map((pin) => ({
-                      ...pin,
-                      imageUrl: pin.image_url,
-                      date: pin.created_at,
-                    }))}
-                    onMapClick={handleMapClick}
-                    selectedPinId={selectedPinId}
-                    onPinSelect={(pin) => setSelectedPinId(pin?.id || null)}
-                  />
-                </div>
-              )}
-
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-                <span className="text-xs text-muted-foreground font-medium">
-                  Clique no mapa para adicionar um novo pin
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleUseMyLocation}
-                  className="gap-1"
-                >
-                  <Navigation className="w-4 h-4" />
-                  <span>Minha Localização</span>
-                </Button>
+            ) : (
+              <div className="h-full w-full overflow-hidden">
+                <WorldMap
+                  pins={pins.map((pin) => ({
+                    ...pin,
+                    imageUrl: pin.image_url,
+                    date: pin.created_at,
+                  }))}
+                  onMapClick={handleMapClick}
+                  selectedPinId={selectedPinId}
+                  onPinSelect={(pin) => setSelectedPinId(pin?.id || null)}
+                />
               </div>
+            )}
+
+            {/* Floating button at the top to toggle pins panel */}
+            <div className="absolute top-4 right-4 z-20">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPins(!showPins)}
+                className="bg-white rounded-full p-3 h-auto gap-2"
+              >
+                {showPins ? (
+                  <ArrowBigRightDashIcon className="w-5 h-5" />
+                ) : (
+                  <>
+                    <MapPin className="w-5 h-5" />
+                    <span className="hidden xl:inline">Ver Pins</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Floating action button for location at the bottom */}
+            <div className="absolute bottom-6 right-4 z-20">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleUseMyLocation}
+                className="bg-white rounded-full p-3 h-auto gap-2"
+              >
+                <Navigation className="w-5 h-5" />
+                <span className="hidden xl:inline">Minha Localização</span>
+              </Button>
             </div>
           </div>
 
-          {/* Recent Pins - Right 2/3 */}
+          {/* Sliding Pins Panel */}
           {showPins && (
-            <div className="w-2/3 flex flex-col overflow-hidden">
-              <div className="bg-card rounded-3xl shadow-lg border border-border p-6 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-border">
-                  <h2 className="text-xl font-semibold text-foreground">
+            <div className="absolute top-0 right-0 h-full w-[400px] xl:w-[500px] z-30 p-4 pl-0">
+              <div className="h-full flex flex-col bg-white rounded-l-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border)]">
+                  <h2 className="text-xl font-semibold text-[var(--foreground)]">
                     Pins Recentes
                   </h2>
-                  {/* <span className="text-sm text-muted-foreground font-medium">
-                  {pins.length} total
-                </span> */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowPins(false)}
+                    className="neu-button rounded-full p-2 h-auto"
+                  >
+                    <ArrowBigRightDashIcon className="w-5 h-5" />
+                  </Button>
                 </div>
                 <div className="flex-1 overflow-hidden rounded-2xl">
-                  <div className="space-y-3 overflow-y-auto scrollbar-apple h-full">
+                  <div className="space-y-4 overflow-y-auto scrollbar-apple h-full pr-2 py-2">
                     {pins.map((pin, index) => (
                       <div
                         key={pin.id}
@@ -588,12 +576,12 @@ const Index = () => {
                         onClick={() => {
                           handlePinClick(pin.id);
                         }}
-                        className="pin-card p-4 cursor-pointer"
+                        className="p-4 border border-black/20 rounded-lg cursor-pointer"
                       >
                         <div className="flex gap-3">
-                          <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold text-lg shadow-lg">
+                          {/* <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold text-lg shadow-lg">
                             {(pin.author || "A")[0].toUpperCase()}
-                          </div>
+                          </div> */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1.5">
                               <span className="font-semibold text-foreground">
@@ -691,7 +679,7 @@ const Index = () => {
                       </div>
                     )}
                     {isFetchingNextPage && (
-                      <div className="text-sm text-muted-foreground text-center py-4 font-medium">
+                      <div className="text-sm text-[var(--muted-foreground)] text-center py-4 font-medium">
                         Loading more...
                       </div>
                     )}
