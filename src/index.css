@@ -102,7 +102,7 @@
   }
 
   body {
-    background-color: var(--background);
+    background-color: #ffffff;
     color: var(--foreground);
     font-family: "Blinker", ui-sans-serif, sans-serif, system-ui;
     letter-spacing: var(--tracking-normal);

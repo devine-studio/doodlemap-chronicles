@@ -309,17 +309,17 @@ const Index = () => {
           >
             {/* Floating tab switcher */}
             <div className="absolute top-4 left-4 right-4 z-20">
-              <div className="bg-white rounded-2xl p-1 shadow-sm">
-                <TabsList className="grid w-full grid-cols-2 bg-transparent border-none gap-2">
+              <div className="bg-white rounded-2xl p-1 shadow-sm border border-gray-200">
+                <TabsList className="grid w-full grid-cols-2 bg-transparent border-none gap-1">
                   <TabsTrigger
                     value="map"
-                    className="neu-button rounded-xl data-[state=active]:neu-pressed"
+                    className="rounded-xl bg-transparent text-gray-600 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
                   >
                     Mapa
                   </TabsTrigger>
                   <TabsTrigger
                     value="pins"
-                    className="neu-button rounded-xl data-[state=active]:neu-pressed"
+                    className="rounded-xl bg-transparent text-gray-600 data-[state=active]:bg-gray-100 data-[state=active]:text-gray-900 data-[state=active]:shadow-none"
                   >
                     Pins Recentes
                   </TabsTrigger>
