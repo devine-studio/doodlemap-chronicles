@@ -42,7 +42,9 @@ export const WorldMap = ({
   useEffect(() => {
     const fetchToken = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("get-mapbox-token");
+        const { data, error } = await supabase.functions.invoke(
+          "get-mapbox-token"
+        );
         if (error) throw error;
         setMapToken(data.token);
       } catch (error) {
@@ -63,10 +65,18 @@ export const WorldMap = ({
       style: "mapbox://styles/mapbox/streets-v12",
       center: [0, 20],
       zoom: 2,
+      attributionControl: false,
     });
 
     map.current.on("load", () => {
       setMapLoaded(true);
+      // Fly to Chapecó, SC, Brazil after map loads
+      map.current?.flyTo({
+        center: [-52.6167, -27.1],
+        zoom: 12,
+        duration: 3000,
+        essential: true,
+      });
     });
 
     map.current.on("click", (e) => {
@@ -96,7 +106,8 @@ export const WorldMap = ({
         // Update existing marker color if needed
         const marker = markersRef.current.get(pin.id)!;
         const el = marker.getElement();
-        el.style.backgroundColor = selectedPinId === pin.id ? "#0078d4" : "#ff4444";
+        el.style.backgroundColor =
+          selectedPinId === pin.id ? "#0078d4" : "#ff4444";
       } else {
         // Create new marker
         const el = document.createElement("div");
@@ -104,7 +115,8 @@ export const WorldMap = ({
         el.style.width = "28px";
         el.style.height = "28px";
         el.style.borderRadius = "50%";
-        el.style.backgroundColor = selectedPinId === pin.id ? "#0078d4" : "#ff4444";
+        el.style.backgroundColor =
+          selectedPinId === pin.id ? "#0078d4" : "#ff4444";
         el.style.border = "3px solid white";
         el.style.boxShadow = "0 3px 12px rgba(0,0,0,0.35)";
         el.style.cursor = "pointer";
