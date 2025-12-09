@@ -297,7 +297,7 @@ const Index = () => {
   return (
     <div className="h-[100dvh] overflow-hidden flex flex-col relative">
       {/* Subtle background */}
-      <div className="fixed inset-0 bg-background pointer-events-none"></div>
+      <div className="fixed inset-0 bg-white pointer-events-none"></div>
 
       <div className="relative z-10 flex flex-col h-full w-full">
         {/* Mobile Layout - Full screen map */}
@@ -309,7 +309,7 @@ const Index = () => {
           >
             {/* Floating tab switcher */}
             <div className="absolute top-4 left-4 right-4 z-20">
-              <div className="bg-white/80 rounded-2xl p-1">
+              <div className="bg-white rounded-2xl p-1 shadow-sm">
                 <TabsList className="grid w-full grid-cols-2 bg-transparent border-none gap-2">
                   <TabsTrigger
                     value="map"
@@ -373,11 +373,11 @@ const Index = () => {
 
             <TabsContent
               value="pins"
-              className="flex-1 mt-0 overflow-hidden p-4 pt-20"
+              className="flex-1 mt-0 overflow-hidden pt-20 bg-white"
             >
-              <NeuCard className="p-4 h-full flex flex-col">
-                <div className="flex-1 overflow-hidden rounded-2xl">
-                  <div className="space-y-2 overflow-y-auto scrollbar-apple h-full">
+              <div className="h-full flex flex-col">
+                <div className="flex-1 overflow-hidden">
+                  <div className="divide-y divide-[var(--border)] overflow-y-auto scrollbar-apple h-full">
                     {pins.map((pin, index) => (
                       <div
                         key={pin.id}
@@ -414,7 +414,7 @@ const Index = () => {
                           }
                           touchStartRef.current = null;
                         }}
-                        className="pin-card p-3 cursor-pointer active:bg-muted/50"
+                        className="px-4 py-3 cursor-pointer hover:bg-[var(--muted)]/30 active:bg-[var(--muted)]/50 transition-colors"
                         role="button"
                         tabIndex={0}
                       >
@@ -563,7 +563,7 @@ const Index = () => {
                     )}
                   </div>
                 </div>
-              </NeuCard>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
@@ -630,8 +630,8 @@ const Index = () => {
           {/* Sliding Pins Panel */}
           {showPins && (
             <div className="absolute top-0 right-0 h-full w-[400px] xl:w-[500px] z-30 p-4 pl-0">
-              <div className="h-full flex flex-col bg-white rounded-l-2xl p-6 shadow-lg">
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border)]">
+              <div className="h-full flex flex-col bg-white border-l border-[var(--border)] shadow-lg">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)]">
                   <h2 className="text-xl font-semibold text-[var(--foreground)]">
                     Pins Recentes
                   </h2>
@@ -639,13 +639,13 @@ const Index = () => {
                     variant="ghost"
                     size="sm"
                     onClick={() => setShowPins(false)}
-                    className="neu-button rounded-full p-2 h-auto"
+                    className="rounded-full p-2 h-auto hover:bg-[var(--muted)]/50"
                   >
                     <ArrowBigRightDashIcon className="w-5 h-5" />
                   </Button>
                 </div>
-                <div className="flex-1 overflow-hidden rounded-2xl">
-                  <div className="space-y-4 overflow-y-auto scrollbar-apple h-full pr-2 py-2">
+                <div className="flex-1 overflow-hidden">
+                  <div className="divide-y divide-[var(--border)] overflow-y-auto scrollbar-apple h-full">
                     {pins.map((pin, index) => (
                       <div
                         key={pin.id}
@@ -655,7 +655,7 @@ const Index = () => {
                         onClick={() => {
                           handlePinClick(pin.id);
                         }}
-                        className="p-4 border border-black/20 rounded-lg cursor-pointer"
+                        className="px-4 py-3 cursor-pointer hover:bg-[var(--muted)]/30 transition-colors"
                       >
                         <div className="flex gap-3">
                           {/* <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold text-lg shadow-lg">
