@@ -403,19 +403,13 @@ const Index = () => {
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="text-xs text-primary hover:text-accent truncate flex items-center gap-1">
-                                <svg
-                                  className="inline-block w-3 h-3 flex-shrink-0"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                <span className="truncate">
-                                  {pin.image_url}
-                                </span>
+                              <div className="mt-2 rounded-xl overflow-hidden border border-[var(--border)]">
+                                <img
+                                  src={pin.image_url}
+                                  alt="Pin image"
+                                  className="w-full h-40 object-cover"
+                                  loading="lazy"
+                                />
                               </div>
                             )}
                             <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
@@ -604,19 +598,13 @@ const Index = () => {
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="text-xs text-primary hover:text-accent truncate flex items-center gap-1">
-                                <svg
-                                  className="inline-block w-3 h-3 flex-shrink-0"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                                </svg>
-                                <span className="truncate">
-                                  {pin.image_url}
-                                </span>
+                              <div className="mt-2 rounded-xl overflow-hidden border border-[var(--border)]">
+                                <img
+                                  src={pin.image_url}
+                                  alt="Pin image"
+                                  className="w-full h-40 object-cover"
+                                  loading="lazy"
+                                />
                               </div>
                             )}
                             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Camera, Upload, X, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface CreatePinDialogProps {
   open: boolean;
@@ -32,26 +35,95 @@ export const CreatePinDialog = ({
   lng,
 }: CreatePinDialogProps) => {
   const [text, setText] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
   const [author, setAuthor] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image must be less than 5MB");
+        return;
+      }
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (cameraInputRef.current) cameraInputRef.current.value = "";
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = fileName;
+
+    const { error: uploadError } = await supabase.storage
+      .from("pin-images")
+      .upload(filePath, file);
+
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage.from("pin-images").getPublicUrl(filePath);
+    return data.publicUrl;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim()) return;
 
-    onSubmit({
-      text: text.trim(),
-      imageUrl: imageUrl.trim() || undefined,
-      author: author.trim() || undefined,
-      lat,
-      lng,
-    });
+    setIsUploading(true);
+    try {
+      let imageUrl: string | undefined;
 
-    // Reset form
-    setText("");
-    setImageUrl("");
-    setAuthor("");
-    onOpenChange(false);
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          imageUrl = uploadedUrl;
+        }
+      }
+
+      onSubmit({
+        text: text.trim(),
+        imageUrl,
+        author: author.trim() || undefined,
+        lat,
+        lng,
+      });
+
+      // Reset form
+      setText("");
+      setAuthor("");
+      setImageFile(null);
+      setImagePreview(null);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -108,6 +180,68 @@ export const CreatePinDialog = ({
             />
           </div>
 
+          {/* Image Upload Section */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-[var(--foreground)]">
+              Adicionar foto (opcional)
+            </Label>
+            
+            {imagePreview ? (
+              <div className="relative rounded-xl overflow-hidden border border-[var(--border)]">
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  className="w-full h-48 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex-1 gap-2"
+                >
+                  <Camera className="w-4 h-4" />
+                  Câmera
+                </Button>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-2">
             <Label
               htmlFor="author"
@@ -123,31 +257,25 @@ export const CreatePinDialog = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label
-              htmlFor="imageUrl"
-              className="text-sm font-medium text-[var(--foreground)]"
-            >
-              Link (opcional)
-            </Label>
-            <Input
-              id="imageUrl"
-              type="url"
-              placeholder="compartilhe um link do spotify, youtube, etc..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
-          </div>
-
           <div className="flex gap-3 justify-end pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isUploading}
             >
               Cancel
             </Button>
-            <Button type="submit">Publicar Pin</Button>
+            <Button type="submit" disabled={isUploading}>
+              {isUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Enviando...
+                </>
+              ) : (
+                "Publicar Pin"
+              )}
+            </Button>
           </div>
         </form>
       </DialogContent>
