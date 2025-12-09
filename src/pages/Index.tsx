@@ -11,6 +11,7 @@ import { CreatePinDialog } from "@/components/CreatePinDialog";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { Button } from "@/components/ui/button";
 import { NeuCard } from "@/components/ui/NeuCard";
 import { NeuCardReversed } from "@/components/ui/NeuCardReversed";
@@ -49,6 +50,7 @@ const Index = () => {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(
     new Set()
   );
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [showPins, setShowPins] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -116,8 +118,9 @@ const Index = () => {
           schema: "public",
           table: "pins",
         },
-        (payload) => {
-          toast.success("New pin added to map!");
+        () => {
+          // Refetch pins when a new pin is added (by any user)
+          refetch();
         }
       )
       .subscribe();
@@ -125,7 +128,7 @@ const Index = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [refetch]);
 
   // Callback ref for intersection observer
   const lastPinElementRef = useCallback(
@@ -142,7 +145,6 @@ const Index = () => {
       observerRef.current = new IntersectionObserver(
         (entries) => {
           if (entries[0].isIntersecting && hasNextPage) {
-            console.log("Intersection detected, fetching next page...");
             fetchNextPage();
           }
         },
@@ -155,7 +157,6 @@ const Index = () => {
       // Observe the new node
       if (node) {
         observerRef.current.observe(node);
-        console.log("Observer attached to last pin element");
       }
     },
     [isLoading, isFetchingNextPage, hasNextPage, fetchNextPage]
@@ -174,20 +175,28 @@ const Index = () => {
     lng: number;
   }) => {
     try {
-      const { error } = await supabase.from("pins").insert({
-        text: pinData.text,
-        image_url: pinData.imageUrl,
-        author: pinData.author,
-        lat: pinData.lat,
-        lng: pinData.lng,
-      });
+      const { data, error } = await supabase
+        .from("pins")
+        .insert({
+          text: pinData.text,
+          image_url: pinData.imageUrl,
+          author: pinData.author,
+          lat: pinData.lat,
+          lng: pinData.lng,
+        })
+        .select();
 
       if (error) throw error;
 
-      toast.success("Pin created successfully!");
+      toast.success("Pin criado com sucesso!", {
+        description: "Seu pin foi adicionado ao mapa.",
+      });
+      refetch(); // Refresh the pins list to show the new pin
     } catch (error) {
       console.error("Error creating pin:", error);
-      toast.error("Error creating pin");
+      toast.error("Erro ao criar pin", {
+        description: "Tente novamente mais tarde.",
+      });
     }
   };
 
@@ -220,11 +229,13 @@ const Index = () => {
 
   const handleUseMyLocation = () => {
     if (!navigator.geolocation) {
-      toast.error("Geolocation is not supported by your browser");
+      toast.error("Geolocalização não suportada", {
+        description: "Seu navegador não suporta geolocalização.",
+      });
       return;
     }
 
-    const loadingToast = toast.loading("Getting your location...");
+    const loadingToast = toast.loading("Obtendo sua localização...");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -232,22 +243,22 @@ const Index = () => {
         const { latitude, longitude } = position.coords;
         setSelectedLocation({ lat: latitude, lng: longitude });
         setDialogOpen(true);
-        toast.success("Location obtained!");
+        toast.success("Localização obtida!");
       },
       (error) => {
         toast.dismiss(loadingToast);
-        let errorMessage = "Could not get your location";
+        let errorMessage = "Não foi possível obter sua localização";
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
             errorMessage =
-              "Location permission denied. Please enable it in browser settings.";
+              "Permissão de localização negada. Habilite nas configurações do navegador.";
             break;
           case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information unavailable";
+            errorMessage = "Informação de localização indisponível";
             break;
           case error.TIMEOUT:
-            errorMessage = "Location request timed out";
+            errorMessage = "Tempo esgotado ao obter localização";
             break;
         }
 
@@ -403,7 +414,13 @@ const Index = () => {
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="mt-2 rounded-xl overflow-hidden border border-[var(--border)]">
+                              <div
+                                className="mt-2 rounded-xl overflow-hidden border border-[var(--border)] cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setLightboxImage(pin.image_url!);
+                                }}
+                              >
                                 <img
                                   src={pin.image_url}
                                   alt="Pin image"
@@ -598,7 +615,13 @@ const Index = () => {
                               {pin.text}
                             </p>
                             {pin.image_url && (
-                              <div className="mt-2 rounded-xl overflow-hidden border border-[var(--border)]">
+                              <div
+                                className="mt-2 rounded-xl overflow-hidden border border-[var(--border)] cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setLightboxImage(pin.image_url!);
+                                }}
+                              >
                                 <img
                                   src={pin.image_url}
                                   alt="Pin image"
@@ -685,6 +708,14 @@ const Index = () => {
           onSubmit={handleCreatePin}
           lat={selectedLocation.lat}
           lng={selectedLocation.lng}
+        />
+
+        {/* Image Lightbox */}
+        <ImageLightbox
+          imageUrl={lightboxImage || ""}
+          alt="Pin image"
+          isOpen={!!lightboxImage}
+          onClose={() => setLightboxImage(null)}
         />
       </div>
     </div>

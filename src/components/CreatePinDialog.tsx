@@ -73,12 +73,18 @@ export const CreatePinDialog = ({
 
   const uploadImage = async (file: File): Promise<string | null> => {
     const fileExt = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const fileName = `${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(7)}.${fileExt}`;
     const filePath = fileName;
 
-    const { error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
       .from("pin-images")
-      .upload(filePath, file);
+      .upload(filePath, file, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: false,
+      });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
@@ -185,7 +191,7 @@ export const CreatePinDialog = ({
             <Label className="text-sm font-medium text-[var(--foreground)]">
               Adicionar foto (opcional)
             </Label>
-            
+
             {imagePreview ? (
               <div className="relative rounded-xl overflow-hidden border border-[var(--border)]">
                 <img

@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Pin {
@@ -36,6 +37,7 @@ export const WorldMap = ({
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [mapToken, setMapToken] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Fetch Mapbox token
   useEffect(() => {
@@ -302,29 +304,17 @@ export const WorldMap = ({
               </p>
 
               {selectedPin.image_url && (
-                <a
-                  href={selectedPin.image_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block group"
+                <div
+                  className="rounded-xl overflow-hidden border border-[var(--border)] cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => setLightboxOpen(true)}
                 >
-                  <div className="text-xs text-[var(--accent)] group-hover:text-[var(--accent)]/80 flex items-center gap-2 bg-[var(--muted)]/30 px-3 py-2.5 rounded-xl transition-colors">
-                    <svg
-                      className="w-4 h-4 flex-shrink-0"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                      />
-                    </svg>
-                    <span className="truncate">{selectedPin.image_url}</span>
-                  </div>
-                </a>
+                  <img
+                    src={selectedPin.image_url}
+                    alt="Pin image"
+                    className="w-full h-40 object-cover"
+                    loading="lazy"
+                  />
+                </div>
               )}
 
               <div className="flex items-center gap-1.5 text-xs text-[var(--muted-foreground)]">
@@ -367,6 +357,16 @@ export const WorldMap = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Image Lightbox */}
+      {selectedPin?.image_url && (
+        <ImageLightbox
+          imageUrl={selectedPin.image_url}
+          alt="Pin image"
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
       )}
     </div>
   );
