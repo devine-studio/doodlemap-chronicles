@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
-import { Map, Marker } from "pigeon-maps";
+import { useState, useEffect, useRef } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { Plus, Minus } from "lucide-react";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Pin {
   id: string;
@@ -29,18 +31,133 @@ export const WorldMap = ({
   selectedPinId,
   onPinSelect,
 }: WorldMapProps) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map());
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null);
-  const [zoom, setZoom] = useState(3);
-  const [center, setCenter] = useState<[number, number]>([20, 0]);
+  const [mapLoaded, setMapLoaded] = useState(false);
+  const [mapToken, setMapToken] = useState<string | null>(null);
 
-  const handleClick = ({ latLng }: { latLng: [number, number] }) => {
-    onMapClick(latLng[0], latLng[1]);
-  };
+  // Fetch Mapbox token
+  useEffect(() => {
+    const fetchToken = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("get-mapbox-token");
+        if (error) throw error;
+        setMapToken(data.token);
+      } catch (error) {
+        console.error("Error fetching Mapbox token:", error);
+      }
+    };
+    fetchToken();
+  }, []);
 
-  const handleMarkerClick = (pin: Pin) => {
-    setSelectedPin(pin);
-    onPinSelect?.(pin);
-  };
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || !mapToken) return;
+
+    mapboxgl.accessToken = mapToken;
+
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: "mapbox://styles/mapbox/dark-v11",
+      center: [0, 20],
+      zoom: 2,
+      projection: "mercator",
+    });
+
+    map.current.on("load", () => {
+      setMapLoaded(true);
+    });
+
+    map.current.on("click", (e) => {
+      onMapClick(e.lngLat.lat, e.lngLat.lng);
+    });
+
+    return () => {
+      map.current?.remove();
+    };
+  }, [mapToken]);
+
+  // Handle markers
+  useEffect(() => {
+    if (!map.current || !mapLoaded) return;
+
+    // Remove old markers that are no longer in pins
+    const currentPinIds = new Set(pins.map((p) => p.id));
+    markersRef.current.forEach((marker, id) => {
+      if (!currentPinIds.has(id)) {
+        marker.remove();
+        markersRef.current.delete(id);
+      }
+    });
+
+    // Add or update markers
+    pins.forEach((pin) => {
+      if (markersRef.current.has(pin.id)) {
+        // Update existing marker color if needed
+        const marker = markersRef.current.get(pin.id)!;
+        const el = marker.getElement();
+        el.style.backgroundColor = selectedPinId === pin.id ? "#0078d4" : "#ff4444";
+      } else {
+        // Create new marker
+        const el = document.createElement("div");
+        el.className = "mapbox-marker";
+        el.style.width = "24px";
+        el.style.height = "24px";
+        el.style.borderRadius = "50%";
+        el.style.backgroundColor = selectedPinId === pin.id ? "#0078d4" : "#ff4444";
+        el.style.border = "3px solid white";
+        el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.3)";
+        el.style.cursor = "pointer";
+        el.style.transition = "transform 0.2s, background-color 0.2s";
+
+        el.addEventListener("mouseenter", () => {
+          el.style.transform = "scale(1.2)";
+        });
+        el.addEventListener("mouseleave", () => {
+          el.style.transform = "scale(1)";
+        });
+
+        const marker = new mapboxgl.Marker({ element: el })
+          .setLngLat([pin.lng, pin.lat])
+          .addTo(map.current!);
+
+        el.addEventListener("click", (e) => {
+          e.stopPropagation();
+          setSelectedPin(pin);
+          onPinSelect?.(pin);
+        });
+
+        markersRef.current.set(pin.id, marker);
+      }
+    });
+  }, [pins, mapLoaded, selectedPinId, onPinSelect]);
+
+  // Handle selected pin from props
+  useEffect(() => {
+    if (selectedPinId && map.current) {
+      const pin = pins.find((p) => p.id === selectedPinId);
+      if (pin) {
+        setSelectedPin(pin);
+        map.current.flyTo({
+          center: [pin.lng, pin.lat],
+          zoom: 15,
+          duration: 1000,
+        });
+      }
+    } else {
+      setSelectedPin(null);
+    }
+  }, [selectedPinId, pins]);
+
+  // Update marker colors when selection changes
+  useEffect(() => {
+    markersRef.current.forEach((marker, id) => {
+      const el = marker.getElement();
+      el.style.backgroundColor = selectedPinId === id ? "#0078d4" : "#ff4444";
+    });
+  }, [selectedPinId]);
 
   const handleClosePin = () => {
     setSelectedPin(null);
@@ -48,90 +165,66 @@ export const WorldMap = ({
   };
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 1, 18));
+    map.current?.zoomIn();
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 1, 1));
+    map.current?.zoomOut();
   };
 
-  useEffect(() => {
-    if (selectedPinId) {
-      const pin = pins.find((p) => p.id === selectedPinId);
-      if (pin) {
-        setSelectedPin(pin);
-        setCenter([pin.lat, pin.lng]);
-        setZoom(15);
-      }
-    } else {
-      // Clear local state when parent clears selectedPinId
-      setSelectedPin(null);
-    }
-  }, [selectedPinId, pins]);
+  if (!mapToken) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-muted/50 rounded-2xl">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">
-      <Map
-        center={center}
-        zoom={zoom}
-        onBoundsChanged={({ center, zoom }) => {
-          setCenter(center);
-          setZoom(zoom);
-        }}
-        onClick={handleClick}
-        attribution={false}
-      >
-        {pins.map((pin) => (
-          <Marker
-            key={pin.id}
-            anchor={[pin.lat, pin.lng]}
-            color={selectedPinId === pin.id ? "#0078d4" : "#ff4444"}
-            onClick={() => handleMarkerClick(pin)}
-          />
-        ))}
-      </Map>
+      <div ref={mapContainer} className="absolute inset-0" />
 
       {/* Zoom Controls */}
       <div className="absolute bottom-4 right-4 z-[999] flex flex-col gap-2">
         <button
           onClick={handleZoomIn}
-          className="w-11 h-11 flex items-center justify-center bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all"
+          className="w-11 h-11 flex items-center justify-center bg-card rounded-xl shadow-lg border border-border hover:shadow-xl hover:scale-105 transition-all"
           aria-label="Zoom in"
         >
-          <Plus className="w-5 h-5 text-gray-800" />
+          <Plus className="w-5 h-5 text-foreground" />
         </button>
         <button
           onClick={handleZoomOut}
-          className="w-11 h-11 flex items-center justify-center bg-white rounded-xl shadow-lg border border-gray-200 hover:shadow-xl hover:scale-105 transition-all"
+          className="w-11 h-11 flex items-center justify-center bg-card rounded-xl shadow-lg border border-border hover:shadow-xl hover:scale-105 transition-all"
           aria-label="Zoom out"
         >
-          <Minus className="w-5 h-5 text-gray-800" />
+          <Minus className="w-5 h-5 text-foreground" />
         </button>
       </div>
 
       {/* Popup Card */}
       {selectedPin && (
         <div className="absolute bottom-2 md:bottom-4 left-1/2 -translate-x-1/2 z-[1000] w-[95%] md:w-[90%] max-w-md">
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 md:p-5">
+          <div className="bg-card rounded-2xl shadow-2xl border border-border p-4 md:p-5">
             <button
               onClick={handleClosePin}
-              className="absolute top-3 right-3 p-1 rounded-full hover:bg-gray-100 transition-colors"
+              className="absolute top-3 right-3 p-1 rounded-full hover:bg-muted transition-colors"
               aria-label="Close"
             >
-              <span className="text-2xl font-semibold leading-none text-gray-600">
+              <span className="text-2xl font-semibold leading-none text-muted-foreground">
                 ×
               </span>
             </button>
 
             <div className="flex gap-3 mb-3">
-              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-base md:text-lg shadow-lg">
+              <div className="flex-shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-semibold text-base md:text-lg shadow-lg">
                 {(selectedPin.author || "A")[0].toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-800 text-sm md:text-base">
+                <div className="font-semibold text-foreground text-sm md:text-base">
                   {selectedPin.author || "Anonymous"}
                 </div>
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-muted-foreground">
                   {new Date(selectedPin.created_at).toLocaleDateString()} at{" "}
                   {new Date(selectedPin.created_at).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -141,7 +234,7 @@ export const WorldMap = ({
               </div>
             </div>
 
-            <p className="text-xs md:text-sm text-gray-700 leading-relaxed mb-3 break-words whitespace-pre-wrap">
+            <p className="text-xs md:text-sm text-foreground leading-relaxed mb-3 break-words whitespace-pre-wrap">
               {selectedPin.text}
             </p>
 
@@ -152,7 +245,7 @@ export const WorldMap = ({
                 rel="noopener noreferrer"
                 className="block mb-3"
               >
-                <div className="text-xs md:text-sm text-blue-600 hover:text-blue-700 underline bg-blue-50 border border-blue-200 p-2 rounded-xl flex items-center gap-1">
+                <div className="text-xs md:text-sm text-primary hover:text-accent underline bg-primary/10 border border-primary/20 p-2 rounded-xl flex items-center gap-1">
                   <svg
                     className="inline-block w-3 h-3 md:w-3.5 md:h-3.5 flex-shrink-0"
                     fill="none"
@@ -167,7 +260,7 @@ export const WorldMap = ({
               </a>
             )}
 
-            <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-200">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground pt-2 border-t border-border">
               <span className="flex items-center">
                 <svg
                   className="inline-block w-3 h-3 mr-1"
@@ -180,7 +273,7 @@ export const WorldMap = ({
               </span>
             </div>
 
-            <div className="flex items-center gap-4 mt-3 pt-2 border-t border-gray-200">
+            <div className="flex items-center gap-4 mt-3 pt-2 border-t border-border">
               <PinLikeButton
                 pinId={selectedPin.id}
                 initialLikeCount={selectedPin.like_count || 0}
