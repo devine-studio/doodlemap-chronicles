@@ -63,12 +63,31 @@ export const WorldMap = ({
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/standard",
-      center: [-52.6167, -27.1], // Start at Chapecó, SC, Brazil
-      zoom: 15,
-      pitch: 80,
-      bearing: -17,
+      style: "mapbox://styles/mapbox/standard?optimize=true",
+      center: [-52.6167, -27.1], // Chapecó, SC, Brazil
+      zoom: 1.5, // Start zoomed out to show globe
+      pitch: 0,
+      bearing: 0,
       attributionControl: false,
+      projection: "globe",
+      fadeDuration: 0, // Disable fade animations for better performance
+      antialias: false, // Disable antialiasing for performance
+    });
+
+    // Use 'idle' event - fires when map is fully rendered and all tiles loaded
+    map.current.once("idle", () => {
+      // Fly to Chapecó with optimized animation curve
+      map.current?.flyTo({
+        center: [-52.6167, -27.1],
+        zoom: 15,
+        pitch: 80,
+        bearing: -17,
+        duration: 2500,
+        essential: true,
+        curve: 1.5, // Smoother animation curve
+        speed: 1.2, // Slightly faster
+        easing: (t) => t, // Linear easing for consistent speed
+      });
     });
 
     map.current.on("load", () => {
