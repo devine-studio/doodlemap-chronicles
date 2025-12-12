@@ -23,7 +23,10 @@ import {
   ArrowBigLeftDashIcon,
   ArrowBigRightDashIcon,
   ExternalLink,
+  Search,
+  X,
 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 // Helper function to detect URL type
 const getUrlType = (url: string): "image" | "spotify" | "link" => {
@@ -76,6 +79,7 @@ const Index = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [showPins, setShowPins] = useState(false);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Infinite query for pins with likes and comments counts
   const {
@@ -128,6 +132,16 @@ const Index = () => {
   });
 
   const pins = data?.pages.flat() || [];
+
+  // Filter pins based on search query
+  const filteredPins = pins.filter((pin) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      pin.text.toLowerCase().includes(query) ||
+      (pin.author && pin.author.toLowerCase().includes(query))
+    );
+  });
 
   // Set up realtime subscription
   useEffect(() => {
@@ -376,13 +390,34 @@ const Index = () => {
               className="flex-1 mt-0 overflow-hidden pt-20 bg-white"
             >
               <div className="h-full flex flex-col">
+                {/* Search bar for mobile */}
+                <div className="px-4 py-3 border-b border-[var(--border)]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Buscar pins..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 pr-9"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="divide-y divide-[var(--border)] overflow-y-auto scrollbar-apple h-full">
-                    {pins.map((pin, index) => (
+                    {filteredPins.map((pin, index) => (
                       <div
                         key={pin.id}
                         ref={
-                          pins.length === index + 1 ? lastPinElementRef : null
+                          filteredPins.length === index + 1 ? lastPinElementRef : null
                         }
                         onClick={() => handlePinClick(pin.id)}
                         onTouchStart={(e) => {
@@ -551,9 +586,9 @@ const Index = () => {
                         </div>
                       </div>
                     ))}
-                    {pins.length === 0 && !isLoading && (
+                    {filteredPins.length === 0 && !isLoading && (
                       <div className="text-sm text-muted-foreground text-center py-8 font-medium">
-                        No pins yet
+                        {searchQuery ? "Nenhum pin encontrado" : "No pins yet"}
                       </div>
                     )}
                     {isFetchingNextPage && (
@@ -644,13 +679,34 @@ const Index = () => {
                     <ArrowBigRightDashIcon className="w-5 h-5" />
                   </Button>
                 </div>
+                {/* Search bar for desktop panel */}
+                <div className="px-4 py-3 border-b border-[var(--border)]">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder="Buscar pins..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 pr-9"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
                 <div className="flex-1 overflow-hidden">
                   <div className="divide-y divide-[var(--border)] overflow-y-auto scrollbar-apple h-full">
-                    {pins.map((pin, index) => (
+                    {filteredPins.map((pin, index) => (
                       <div
                         key={pin.id}
                         ref={
-                          pins.length === index + 1 ? lastPinElementRef : null
+                          filteredPins.length === index + 1 ? lastPinElementRef : null
                         }
                         onClick={() => {
                           handlePinClick(pin.id);
@@ -798,9 +854,9 @@ const Index = () => {
                         </div>
                       </div>
                     ))}
-                    {pins.length === 0 && !isLoading && (
+                    {filteredPins.length === 0 && !isLoading && (
                       <div className="text-sm text-muted-foreground text-center py-8 font-medium">
-                        No pins yet
+                        {searchQuery ? "Nenhum pin encontrado" : "No pins yet"}
                       </div>
                     )}
                     {isFetchingNextPage && (
