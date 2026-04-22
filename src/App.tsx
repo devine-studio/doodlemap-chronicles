@@ -6,6 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import MobileMap from "./pages/MobileMap";
+import MobileFeed from "./pages/MobileFeed";
+import CreatePin from "./pages/CreatePin";
 
 const queryClient = new QueryClient();
 
@@ -18,6 +21,9 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/mobile/map" element={<MobileMap />} />
+            <Route path="/mobile/feed" element={<MobileFeed />} />
+            <Route path="/mobile/create" element={<CreatePin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

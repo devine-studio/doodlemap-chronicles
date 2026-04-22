@@ -1,0 +1,45 @@
+import { useState } from "react";
+import { PinsFeed } from "@/components/PinsFeed";
+import { usePinsQuery } from "@/hooks/usePinsQuery";
+
+const MobileFeed = () => {
+  const { pins, isLoading, isFetchingNextPage, refetch, lastPinElementRef } =
+    usePinsQuery();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
+  const handleCommentAdded = (pinId: string) => {
+    refetch();
+  };
+
+  const handleLikeAdded = () => {
+    refetch();
+  };
+
+  return (
+    <div className="h-[100dvh] w-full overflow-hidden bg-white flex flex-col">
+      {isLoading ? (
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin mb-3"></div>
+          <p className="text-sm text-[var(--foreground)] font-medium">
+            Loading pins...
+          </p>
+        </div>
+      ) : (
+        <PinsFeed
+          pins={pins}
+          isLoading={isLoading}
+          isFetchingNextPage={isFetchingNextPage}
+          lastPinElementRef={lastPinElementRef}
+          onImageClick={(imageUrl) => setLightboxImage(imageUrl)}
+          onCommentAdded={handleCommentAdded}
+          onLikeAdded={handleLikeAdded}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
+      )}
+    </div>
+  );
+};
+
+export default MobileFeed;
