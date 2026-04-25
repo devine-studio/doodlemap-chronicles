@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ImageLightbox } from "./ImageLightbox";
+import { PinShareButton } from "./PinShareButton";
 import { ExternalLink } from "lucide-react";
+import type { Pin } from "@/hooks/usePinsQuery";
 
 // Helper function to detect URL type
 const getUrlType = (url: string): "image" | "spotify" | "link" => {
@@ -32,6 +34,7 @@ interface PinCardProps {
   coordinates?: { lat: number; lng: number };
   likeCount?: number;
   commentCount?: number;
+  pin?: Pin;
 }
 
 export const PinCard = ({
@@ -43,6 +46,7 @@ export const PinCard = ({
   coordinates,
   likeCount = 0,
   commentCount = 0,
+  pin,
 }: PinCardProps) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -203,6 +207,11 @@ export const PinCard = ({
               </svg>
               <span>{commentCount}</span>
             </div>
+            {pin && (
+              <div className="ml-auto">
+                <PinShareButton pin={pin} variant="icon" />
+              </div>
+            )}
           </div>
         </div>
       </div>

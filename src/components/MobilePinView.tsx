@@ -5,6 +5,7 @@ import { X, ExternalLink, Navigation } from "lucide-react";
 import { Pin } from "@/hooks/usePinsQuery";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
+import { PinShareButton } from "@/components/PinShareButton";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -60,9 +61,8 @@ export const MobilePinView = ({
 
     const fetchToken = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke(
-          "get-mapbox-token"
-        );
+        const { data, error } =
+          await supabase.functions.invoke("get-mapbox-token");
         if (error) throw error;
         if (!cancelled) setMapToken(data.token);
       } catch (error) {
@@ -116,11 +116,11 @@ export const MobilePinView = ({
 
   return (
     <div
-      className="fixed inset-0 z-[1000] bg-white overflow-y-auto scrollbar-apple animate-in fade-in duration-200"
+      className="fixed inset-0 z-[1000] pb-32 bg-white overflow-y-auto overscroll-y-contain scrollbar-apple animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
     >
-      <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-white/95 backdrop-blur border-b border-[var(--border)]">
+      <div className="top-0 z-10 flex items-center justify-between px-4 py-3 bg-white/95 backdrop-blur border-b border-[var(--border)]">
         <h2 className="text-base font-semibold text-[var(--foreground)]">
           Pin
         </h2>
@@ -171,7 +171,7 @@ export const MobilePinView = ({
                   onClick={() =>
                     window.open(
                       `https://www.google.com/maps?q=${pin.lat},${pin.lng}`,
-                      "_blank"
+                      "_blank",
                     )
                   }
                   className="cursor-pointer"
@@ -182,7 +182,7 @@ export const MobilePinView = ({
                   onClick={() =>
                     window.open(
                       `https://maps.apple.com/?q=${pin.lat},${pin.lng}`,
-                      "_blank"
+                      "_blank",
                     )
                   }
                   className="cursor-pointer"
@@ -291,6 +291,7 @@ export const MobilePinView = ({
               </svg>
               <span className="font-medium">{pin.comment_count || 0}</span>
             </button>
+            <PinShareButton pin={pin} variant="inline" />
           </div>
           <PinComments
             pinId={pin.id}

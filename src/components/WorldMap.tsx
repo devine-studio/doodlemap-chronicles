@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
+import { PinShareButton } from "@/components/PinShareButton";
 import { ImageLightbox } from "@/components/ImageLightbox";
 import { supabase } from "@/integrations/supabase/client";
 import { ExternalLink, MapPin } from "lucide-react";
@@ -491,6 +492,9 @@ export const WorldMap = ({
                 showComments={false}
                 onToggleComments={() => {}}
               />
+              <div className="ml-auto">
+                <PinShareButton pin={selectedPin} variant="icon" />
+              </div>
             </div>
           </div>
         </div>

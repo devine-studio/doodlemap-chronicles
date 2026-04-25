@@ -2,6 +2,7 @@ import { useState, useRef, TouchEvent as ReactTouchEvent } from "react";
 import { Pin } from "@/hooks/usePinsQuery";
 import { PinLikeButton } from "@/components/PinLikeButton";
 import { PinComments } from "@/components/PinComments";
+import { PinShareButton } from "@/components/PinShareButton";
 import { Input } from "@/components/ui/input";
 import { Search, X, ExternalLink } from "lucide-react";
 
@@ -246,6 +247,9 @@ export const PinsFeed = ({
                           {pin.comment_count || 0}
                         </span>
                       </button>
+                      <div className="ml-auto">
+                        <PinShareButton pin={pin} variant="icon" />
+                      </div>
                     </div>
                     <PinComments
                       pinId={pin.id}

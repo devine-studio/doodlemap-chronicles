@@ -40,18 +40,20 @@ const MobileFeed = () => {
           </p>
         </div>
       ) : (
-        <PinsFeed
-          pins={pins}
-          isLoading={isLoading}
-          isFetchingNextPage={isFetchingNextPage}
-          lastPinElementRef={lastPinElementRef}
-          onPinClick={handlePinClick}
-          onImageClick={(imageUrl) => setLightboxImage(imageUrl)}
-          onCommentAdded={handleCommentAdded}
-          onLikeAdded={handleLikeAdded}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
+        <div className={`flex-1 min-h-0${selectedPin ? " pointer-events-none" : ""}`}>
+          <PinsFeed
+            pins={pins}
+            isLoading={isLoading}
+            isFetchingNextPage={isFetchingNextPage}
+            lastPinElementRef={lastPinElementRef}
+            onPinClick={handlePinClick}
+            onImageClick={(imageUrl) => setLightboxImage(imageUrl)}
+            onCommentAdded={handleCommentAdded}
+            onLikeAdded={handleLikeAdded}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+          />
+        </div>
       )}
 
       <MobilePinView
